@@ -2,7 +2,7 @@
 ---
 
 body {
-    font-family: 'Noto Sans JP', sans-serif !important;
+    font-family: "Noto Sans JP", sans-serif !important;
 }
 
 a {
@@ -12,8 +12,9 @@ a {
 $content-width: 1400px;
 @import "minima";
 
-
-.site-header, .site-title, .site-nav {
+.site-header,
+.site-title,
+.site-nav {
     line-height: 100px;
     height: 100px;
 
@@ -28,8 +29,6 @@ header {
 }
 
 .main__content {
-    box-shadow: 0px 8px 13px 2px #988c8c;
-    border: 1px solid #FFF;
     border-radius: 10px;
     margin-bottom: 25px;
     background: #fff;
@@ -101,9 +100,9 @@ header {
 }
 
 .footer-heading {
-    display:none;
+    display: none;
 }
 
 body {
-    background: url('https://image.freepik.com/free-vector/vintage-ornamental-flowers-background_52683-28040.jpg');
+    background: url("https://image.freepik.com/free-vector/vintage-ornamental-flowers-background_52683-28040.jpg");
 }
