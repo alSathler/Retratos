@@ -1,0 +1,27 @@
+{
+    "name": "panoramas",
+    "private": true,
+    "type": "module",
+    "version": "0.1.0",
+    "scripts": {
+        "dev": "astro dev",
+        "start": "astro dev",
+        "build": "astro build",
+        "preview": "astro preview",
+        "astro": "astro",
+        "check": "astro check",
+        "migrate:posts": "node scripts/migrate-posts.mjs"
+    },
+    "dependencies": {
+        "astro": "^5.1.0",
+        "@astrojs/sitemap": "^3.2.1",
+        "photoswipe": "^5.4.4",
+        "sharp": "^0.33.5"
+    },
+    "devDependencies": {
+        "@astrojs/check": "^0.9.4",
+        "js-yaml": "^4.1.0",
+        "sass": "^1.83.0",
+        "typescript": "^5.7.0"
+    }
+}

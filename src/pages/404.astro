@@ -1,0 +1,22 @@
+---
+import Base from "../layouts/Base.astro";
+const home = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/` || "/";
+---
+
+<Base title="404 — not here" description="That panorama drifted past the horizon.">
+    <main class="post shell" style="padding-top: clamp(96px, 14vw, 200px);">
+        <p class="hero__eyebrow">404 — page not found</p>
+        <h1 class="hero__title" style="font-size: clamp(48px, 9vw, 132px);">
+            this horizon<br /><em>doesn't exist.</em>
+        </h1>
+        <p
+            class="hero__lede"
+            style="margin-top: clamp(24px, 4vw, 40px);"
+        >
+            The panorama you're looking for either drifted off or was never here.
+        </p>
+        <p style="margin-top: clamp(40px, 6vw, 72px);">
+            <a class="post__back" href={home}>← back to all panoramas</a>
+        </p>
+    </main>
+</Base>

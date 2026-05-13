@@ -1,0 +1,85 @@
+---
+import "../styles/global.scss";
+import "photoswipe/style.css";
+import SiteHeader from "../components/SiteHeader.astro";
+
+interface Props {
+    title?: string;
+    description?: string;
+}
+
+const { title, description } = Astro.props;
+const siteTitle = "panoramas.";
+const fullTitle = title ? `${title} — ${siteTitle}` : siteTitle;
+const desc =
+    description ??
+    "A slow travel journal of hand-taken panoramas — wide horizons stitched one frame at a time, shot on an iPhone X with a DJI Osmo Mobile 3.";
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{fullTitle}</title>
+        <meta name="description" content={desc} />
+        <link rel="canonical" href={canonical} />
+
+        <script is:inline>
+            (function () {
+                try {
+                    var stored = localStorage.getItem("panoramas:theme");
+                    var prefersDark = window.matchMedia(
+                        "(prefers-color-scheme: dark)"
+                    ).matches;
+                    var theme = stored || (prefersDark ? "dark" : "light");
+                    document.documentElement.setAttribute("data-theme", theme);
+                } catch (e) {
+                    document.documentElement.setAttribute("data-theme", "light");
+                }
+            })();
+        </script>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <SiteHeader />
+        <slot />
+
+        <script>
+            import PhotoSwipeLightbox from "photoswipe/lightbox";
+
+            document.querySelectorAll<HTMLElement>("[data-gallery]").forEach((el) => {
+                const lightbox = new PhotoSwipeLightbox({
+                    gallery: el,
+                    children: "a[data-pswp-src]",
+                    pswpModule: () => import("photoswipe"),
+                    initialZoomLevel: "fit",
+                    secondaryZoomLevel: 1.6,
+                    maxZoomLevel: 3,
+                    wheelToZoom: true,
+                    bgOpacity: 0.96,
+                });
+                lightbox.init();
+            });
+
+            const root = document.documentElement;
+            const toggle = document.querySelector("[data-theme-toggle]");
+            toggle?.addEventListener("click", () => {
+                const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+                root.setAttribute("data-theme", next);
+                try {
+                    localStorage.setItem("panoramas:theme", next);
+                } catch (e) {
+                    /* storage unavailable */
+                }
+            });
+        </script>
+    </body>
+</html>

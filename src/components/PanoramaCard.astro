@@ -1,0 +1,79 @@
+---
+import { Image, getImage } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+    panorama: CollectionEntry<"panoramas">;
+    index: number;
+    total: number;
+}
+
+const { panorama, index, total } = Astro.props;
+const { data, id } = panorama;
+const ratio = data.image.width / data.image.height;
+const indexStr = String(index).padStart(2, "0");
+const totalStr = String(total).padStart(2, "0");
+
+const monthYear = data.date.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+});
+
+const postUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/${id}.html`;
+
+const fullImage = await getImage({
+    src: data.image,
+    width: Math.min(data.image.width, 2400),
+    format: "webp",
+});
+
+const lqip = await getImage({
+    src: data.image,
+    width: 24,
+    format: "jpg",
+    quality: 30,
+});
+---
+
+<article class="panorama" id={id}>
+    <div class="panorama__index">{indexStr} / {totalStr}</div>
+
+    <a
+        class="panorama__frame"
+        href={fullImage.src}
+        data-pswp-width={fullImage.attributes.width ?? data.image.width}
+        data-pswp-height={fullImage.attributes.height ?? data.image.height}
+        data-pswp-src={fullImage.src}
+        data-permalink={postUrl}
+        style={`aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
+        aria-label={`Open ${data.title} in lightbox`}
+    >
+        <Image
+            class="panorama__img"
+            src={data.image}
+            alt={data.alt}
+            widths={[480, 960, 1440]}
+            sizes="(max-width: 720px) 100vw, (max-width: 1180px) 90vw, 1100px"
+            format="webp"
+            loading={index <= 2 ? "eager" : "lazy"}
+            decoding="async"
+        />
+    </a>
+
+    <div class="panorama__caption">
+        <h2 class="panorama__title">
+            <a href={postUrl}>{data.title}</a>
+        </h2>
+        <div class="panorama__meta">
+            <span class="panorama__country">{data.country}</span>
+            {
+                data.latitude != null && data.longitude != null && (
+                    <span>
+                        {data.latitude.toFixed(2)}°&thinsp;·&thinsp;{data.longitude.toFixed(2)}°
+                    </span>
+                )
+            }
+            <span>{monthYear}</span>
+        </div>
+    </div>
+</article>

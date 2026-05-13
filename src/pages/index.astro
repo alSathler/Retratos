@@ -1,0 +1,33 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Hero from "../components/Hero.astro";
+import PanoramaCard from "../components/PanoramaCard.astro";
+
+const panoramas = (await getCollection("panoramas")).sort(
+    (a, b) => a.data.date.getTime() - b.data.date.getTime()
+);
+const total = panoramas.length;
+---
+
+<Base>
+    <main>
+        <Hero panoramas={panoramas} />
+
+        <section class="gallery shell" data-gallery>
+            {
+                panoramas.map((panorama, i) => (
+                    <PanoramaCard panorama={panorama} index={i + 1} total={total} />
+                ))
+            }
+        </section>
+
+        <footer class="colophon">
+            <div class="shell colophon__row">
+                <span class="colophon__mark">panoramas.</span>
+                <span>built with Astro · photographed by <a href="https://github.com/4gray">@4gray</a></span>
+                <span>© {new Date().getFullYear()}</span>
+            </div>
+        </footer>
+    </main>
+</Base>

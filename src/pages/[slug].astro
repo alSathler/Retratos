@@ -1,0 +1,117 @@
+---
+import { Image, getImage } from "astro:assets";
+import { getCollection, type CollectionEntry } from "astro:content";
+import Base from "../layouts/Base.astro";
+
+export async function getStaticPaths() {
+    const panoramas = (await getCollection("panoramas")).sort(
+        (a, b) => a.data.date.getTime() - b.data.date.getTime()
+    );
+
+    return panoramas.map((panorama, i) => ({
+        params: { slug: panorama.id },
+        props: {
+            panorama,
+            prev: panoramas[i - 1] ?? null,
+            next: panoramas[i + 1] ?? null,
+        },
+    }));
+}
+
+interface Props {
+    panorama: CollectionEntry<"panoramas">;
+    prev: CollectionEntry<"panoramas"> | null;
+    next: CollectionEntry<"panoramas"> | null;
+}
+
+const { panorama, prev, next } = Astro.props;
+const { data } = panorama;
+const ratio = data.image.width / data.image.height;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const home = `${base}/`;
+const urlFor = (entry: CollectionEntry<"panoramas">) => `${base}/${entry.id}.html`;
+
+const monthYear = data.date.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+});
+
+const fullImage = await getImage({
+    src: data.image,
+    width: Math.min(data.image.width, 2400),
+    format: "webp",
+});
+
+const lqip = await getImage({
+    src: data.image,
+    width: 24,
+    format: "jpg",
+    quality: 30,
+});
+---
+
+<Base title={data.title} description={`${data.title} — ${data.country}, ${monthYear}.`}>
+    <main class="post shell">
+        <a class="post__back" href={home}>← all panoramas</a>
+
+        <div data-gallery>
+            <a
+                class="post__frame"
+                href={fullImage.src}
+                data-pswp-width={fullImage.attributes.width ?? data.image.width}
+                data-pswp-height={fullImage.attributes.height ?? data.image.height}
+                data-pswp-src={fullImage.src}
+                style={`aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
+                aria-label={`Open ${data.title} in lightbox`}
+            >
+                <Image
+                    src={data.image}
+                    alt={data.alt}
+                    widths={[960, 1440, 1920]}
+                    sizes="(max-width: 1180px) 100vw, 1100px"
+                    format="webp"
+                    loading="eager"
+                    decoding="async"
+                />
+                <span class="post__open">open ↗</span>
+            </a>
+        </div>
+
+        <h1 class="post__title">{data.title}</h1>
+        <div class="post__meta">
+            <strong>{data.country}</strong>
+            {
+                data.latitude != null && data.longitude != null && (
+                    <span>
+                        {data.latitude.toFixed(4)}° N · {data.longitude.toFixed(4)}° E
+                    </span>
+                )
+            }
+            <span>{monthYear}</span>
+            <span>{data.image.width} × {data.image.height} px</span>
+        </div>
+
+        <nav class="post-nav">
+            <div class="post-nav__cell">
+                {
+                    prev && (
+                        <a href={urlFor(prev)}>
+                            <div class="post-nav__label">← previous</div>
+                            <div class="post-nav__title">{prev.data.title}</div>
+                        </a>
+                    )
+                }
+            </div>
+            <div class="post-nav__cell post-nav__cell--next">
+                {
+                    next && (
+                        <a href={urlFor(next)}>
+                            <div class="post-nav__label">next →</div>
+                            <div class="post-nav__title">{next.data.title}</div>
+                        </a>
+                    )
+                }
+            </div>
+        </nav>
+    </main>
+</Base>

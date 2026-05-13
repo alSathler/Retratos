@@ -1,0 +1,31 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+    panoramas: CollectionEntry<"panoramas">[];
+}
+
+const { panoramas } = Astro.props;
+const total = panoramas.length;
+const countries = new Set(panoramas.map((p) => p.data.country)).size;
+const years = panoramas.map((p) => p.data.date.getFullYear());
+const firstYear = Math.min(...years);
+const lastYear = Math.max(...years);
+const span = firstYear === lastYear ? `${firstYear}` : `${firstYear} – ${lastYear}`;
+---
+
+<section class="hero">
+    <div class="shell">
+        <p class="hero__eyebrow">a slow travel journal — {total} places</p>
+        <h1 class="hero__title">panoramas,<br /><em>quiet & wide.</em></h1>
+        <p class="hero__lede">
+            Wide horizons stitched together one frame at a time. All photos taken by hand on an iPhone X with a DJI Osmo Mobile 3.
+        </p>
+        <dl class="hero__meta">
+            <div><dt>frames</dt><dd>{total}</dd></div>
+            <div><dt>countries</dt><dd>{countries}</dd></div>
+            <div><dt>span</dt><dd>{span}</dd></div>
+            <div><dt>gear</dt><dd>iPhone X · Osmo M3</dd></div>
+        </dl>
+    </div>
+</section>
