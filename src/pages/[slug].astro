@@ -36,6 +36,10 @@ const monthYear = data.date.toLocaleDateString("en-US", {
     year: "numeric",
 });
 
+const fmtLat = (v: number) => `${Math.abs(v).toFixed(4)}° ${v >= 0 ? "N" : "S"}`;
+const fmtLon = (v: number) => `${Math.abs(v).toFixed(4)}° ${v >= 0 ? "E" : "W"}`;
+const mapUrl = `${base}/map#${panorama.id}`;
+
 const fullImage = await getImage({
     src: data.image,
     width: Math.min(data.image.width, 2400),
@@ -82,9 +86,13 @@ const lqip = await getImage({
             <strong>{data.country}</strong>
             {
                 data.latitude != null && data.longitude != null && (
-                    <span>
-                        {data.latitude.toFixed(4)}° N · {data.longitude.toFixed(4)}° E
-                    </span>
+                    <a class="post__map-link" href={mapUrl}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        {fmtLat(data.latitude)} · {fmtLon(data.longitude)}
+                    </a>
                 )
             }
             <span>{monthYear}</span>

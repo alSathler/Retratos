@@ -150,7 +150,8 @@ button {
     color: var(--ink-muted);
 }
 
-.site-nav a:hover {
+.site-nav a:hover,
+.site-nav a[aria-current="page"] {
     color: var(--ink);
 }
 
@@ -498,6 +499,27 @@ button {
     color: var(--ink);
     font-weight: 400;
     letter-spacing: 0.18em;
+}
+
+.post__map-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--ink-muted);
+    transition: color 180ms ease;
+}
+
+.post__map-link svg {
+    color: var(--accent);
+    transition: transform 180ms ease;
+}
+
+.post__map-link:hover {
+    color: var(--ink);
+}
+
+.post__map-link:hover svg {
+    transform: translateY(-2px);
 }
 
 .post-nav {
