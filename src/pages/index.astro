@@ -14,7 +14,7 @@ const total = panoramas.length;
     <main>
         <Hero panoramas={panoramas} />
 
-        <section class="gallery shell" data-gallery>
+        <section class="gallery gallery--logbook shell" data-gallery>
             {
                 panoramas.map((panorama, i) => (
                     <PanoramaCard panorama={panorama} index={i + 1} total={total} />
