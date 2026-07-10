@@ -14,6 +14,8 @@ export async function getStaticPaths() {
             panorama,
             prev: panoramas[i - 1] ?? null,
             next: panoramas[i + 1] ?? null,
+            index: i + 1,
+            total: panoramas.length,
         },
     }));
 }
@@ -22,9 +24,11 @@ interface Props {
     panorama: CollectionEntry<"panoramas">;
     prev: CollectionEntry<"panoramas"> | null;
     next: CollectionEntry<"panoramas"> | null;
+    index: number;
+    total: number;
 }
 
-const { panorama, prev, next } = Astro.props;
+const { panorama, prev, next, index, total } = Astro.props;
 const { data } = panorama;
 const ratio = data.image.width / data.image.height;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -39,6 +43,8 @@ const monthYear = data.date.toLocaleDateString("en-US", {
 const fmtLat = (v: number) => `${Math.abs(v).toFixed(4)}° ${v >= 0 ? "N" : "S"}`;
 const fmtLon = (v: number) => `${Math.abs(v).toFixed(4)}° ${v >= 0 ? "E" : "W"}`;
 const mapUrl = `${base}/map#${panorama.id}`;
+const indexStr = String(index).padStart(2, "0");
+const totalStr = String(total).padStart(2, "0");
 
 const fullImage = await getImage({
     src: data.image,
@@ -55,56 +61,70 @@ const lqip = await getImage({
 ---
 
 <Base title={data.title} description={`${data.title} — ${data.country}, ${monthYear}.`}>
-    <main class="post shell">
-        <a class="post__back" href={home}>← all panoramas</a>
-
-        <div data-gallery>
-            <a
-                class="post__frame"
-                href={fullImage.src}
-                data-pswp-width={fullImage.attributes.width ?? data.image.width}
-                data-pswp-height={fullImage.attributes.height ?? data.image.height}
-                data-pswp-src={fullImage.src}
-                style={`aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
-                aria-label={`Open ${data.title} in lightbox`}
-            >
-                <Image
-                    src={data.image}
-                    alt={data.alt}
-                    widths={[960, 1440, 1920]}
-                    sizes="(max-width: 1180px) 100vw, 1100px"
-                    format="webp"
-                    loading="eager"
-                    decoding="async"
-                />
-                <span class="post__open">open ↗</span>
-            </a>
+    <main class="post post--logbook">
+        <div class="post__topline shell-wide">
+            <a class="post__back" href={home}>← field log</a>
+            <span aria-label={`Entry ${index} of ${total}`}>entry {indexStr} / {totalStr}</span>
+            <time datetime={data.date.toISOString()}>{monthYear}</time>
         </div>
 
-        <h1 class="post__title">{data.title}</h1>
-        <div class="post__meta">
-            <strong>{data.country}</strong>
-            {
-                data.latitude != null && data.longitude != null && (
-                    <a class="post__map-link" href={mapUrl}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                            <circle cx="12" cy="10" r="3" />
-                        </svg>
-                        {fmtLat(data.latitude)} · {fmtLon(data.longitude)}
-                    </a>
-                )
-            }
-            <span>{monthYear}</span>
-            <span>{data.image.width} × {data.image.height} px</span>
+        <div class="post__spread shell-wide">
+            <div class="post__media" data-gallery>
+                <a
+                    class="post__frame"
+                    href={fullImage.src}
+                    data-pswp-width={fullImage.attributes.width ?? data.image.width}
+                    data-pswp-height={fullImage.attributes.height ?? data.image.height}
+                    data-pswp-src={fullImage.src}
+                    style={`aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
+                    aria-label={`Open ${data.title} in lightbox`}
+                >
+                    <Image
+                        src={data.image}
+                        alt={data.alt}
+                        widths={[960, 1440, 1920]}
+                        sizes="(max-width: 860px) 100vw, (max-width: 1440px) 72vw, 1180px"
+                        format="webp"
+                        loading="eager"
+                        decoding="async"
+                    />
+                    <span class="post__open">open frame ↗</span>
+                </a>
+            </div>
+
+            <aside class="post__field-note">
+                <div class="post__field-number"><span>field entry</span><strong>{indexStr}</strong></div>
+                <p class="post__place">{data.country.replace(/-/g, " ")}</p>
+                <h1 class="post__title">{data.title}</h1>
+                <dl>
+                    <div><dt>recorded</dt><dd>{monthYear}</dd></div>
+                    <div><dt>latitude</dt><dd>{data.latitude == null ? "—" : fmtLat(data.latitude)}</dd></div>
+                    <div><dt>longitude</dt><dd>{data.longitude == null ? "—" : fmtLon(data.longitude)}</dd></div>
+                    <div><dt>frame</dt><dd>{data.image.width} × {data.image.height}</dd></div>
+                    <div><dt>camera</dt><dd>iPhone X</dd></div>
+                    <div><dt>stabilizer</dt><dd>Osmo M3</dd></div>
+                </dl>
+                {
+                    data.latitude != null && data.longitude != null && (
+                        <a class="post__map-link" href={mapUrl}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                <circle cx="12" cy="10" r="3" />
+                            </svg>
+                            locate in atlas
+                        </a>
+                    )
+                }
+                <p class="post__field-signoff">one place, one horizon.</p>
+            </aside>
         </div>
 
-        <nav class="post-nav">
+        <nav class="post-nav shell">
             <div class="post-nav__cell">
                 {
                     prev && (
                         <a href={urlFor(prev)}>
-                            <div class="post-nav__label">← previous</div>
+                            <div class="post-nav__label">← previous entry</div>
                             <div class="post-nav__title">{prev.data.title}</div>
                         </a>
                     )
@@ -114,7 +134,7 @@ const lqip = await getImage({
                 {
                     next && (
                         <a href={urlFor(next)}>
-                            <div class="post-nav__label">next →</div>
+                            <div class="post-nav__label">next entry →</div>
                             <div class="post-nav__title">{next.data.title}</div>
                         </a>
                     )
