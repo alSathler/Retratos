@@ -1,15 +1,24 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const read = (path) =>
     readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("home uses a folio hero and numbered logbook entries", () => {
-    assert.match(read("src/components/Hero.astro"), /hero__folio/);
-    assert.match(read("src/components/Hero.astro"), /hero__ledger/);
+test("home uses a physical notebook cover above numbered entries", () => {
+    const hero = read("src/components/Hero.astro");
+
+    assert.match(hero, /field-logbook-cover\.png/);
+    assert.match(hero, /hero__notebook/);
+    assert.match(hero, /hero__photo-strip/);
+    assert.match(hero, /coverPanorama = panoramas\.at\(-1\)/);
+    assert.doesNotMatch(hero, /hero__folio/);
+    assert.ok(
+        existsSync(
+            new URL("../assets/images/field-logbook-cover.png", import.meta.url)
+        )
+    );
     assert.match(read("src/components/PanoramaCard.astro"), /log-entry__margin/);
-    assert.match(read("src/components/PanoramaCard.astro"), /log-entry__sheet/);
     assert.match(read("src/pages/index.astro"), /gallery--logbook/);
 });
 
@@ -38,4 +47,13 @@ test("detail keeps the title above the spread and out of the metadata rail", () 
 
 test("the header identifies the field-log edition", () => {
     assert.match(read("src/components/SiteHeader.astro"), /site-brand__edition/);
+});
+
+test("mobile entry frames do not expand beyond the zero-gutter gallery", () => {
+    const styles = read("src/styles/global.scss");
+
+    assert.doesNotMatch(
+        styles,
+        /\.log-entry__frame\s*{\s*margin-inline:\s*calc\(-1 \* var\(--gutter\)\);\s*}/
+    );
 });
