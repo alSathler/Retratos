@@ -632,12 +632,16 @@ button {
     justify-self: end;
 }
 
+.post__entry-heading {
+    padding-top: clamp(24px, 2.6vw, 40px);
+    padding-bottom: clamp(20px, 2.2vw, 34px);
+}
+
 .post__spread {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(220px, 292px);
     gap: clamp(28px, 4vw, 64px);
     align-items: start;
-    padding-top: clamp(24px, 3vw, 44px);
 }
 
 .post__back {
@@ -684,6 +688,7 @@ button {
 }
 
 .post__field-note {
+    min-width: 0;
     border-left: 1px solid var(--margin-rule);
     padding: 2px 0 0 clamp(22px, 3vw, 42px);
     background-image: repeating-linear-gradient(
@@ -726,14 +731,17 @@ button {
 }
 
 .post__title {
+    max-width: 24ch;
     font-family: var(--font-display);
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(42px, 5vw, 72px);
-    line-height: 0.92;
-    letter-spacing: -0.02em;
-    margin: 0 0 32px;
+    font-size: clamp(42px, 5.4vw, 88px);
+    line-height: 0.9;
+    letter-spacing: -0.025em;
+    margin: 0;
     color: var(--ink);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
 }
 
 .post__field-note dl {
@@ -759,10 +767,12 @@ button {
 }
 
 .post__field-note dd {
+    min-width: 0;
     margin: 0;
     color: var(--ink);
     text-align: right;
     font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
 }
 
 .post__map-link {
@@ -836,6 +846,10 @@ button {
 }
 
 @media (max-width: 860px) {
+    .post__entry-heading {
+        padding-top: 24px;
+        padding-bottom: 22px;
+    }
     .post__spread {
         grid-template-columns: 1fr;
         gap: 30px;

@@ -22,6 +22,20 @@ test("detail uses an image and field-note spread", () => {
     assert.match(detail, /index: i \+ 1/);
 });
 
+test("detail keeps the title above the spread and out of the metadata rail", () => {
+    const detail = read("src/pages/[slug].astro");
+    const headingIndex = detail.indexOf('class="post__entry-heading shell-wide"');
+    const spreadIndex = detail.indexOf('class="post__spread shell-wide"');
+    const railStart = detail.indexOf('<aside class="post__field-note">');
+    const railEnd = detail.indexOf("</aside>", railStart);
+    const rail = detail.slice(railStart, railEnd);
+
+    assert.notEqual(headingIndex, -1);
+    assert.ok(headingIndex < spreadIndex);
+    assert.doesNotMatch(rail, /post__title/);
+    assert.doesNotMatch(rail, /<h1/);
+});
+
 test("the header identifies the field-log edition", () => {
     assert.match(read("src/components/SiteHeader.astro"), /site-brand__edition/);
 });

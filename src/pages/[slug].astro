@@ -68,6 +68,10 @@ const lqip = await getImage({
             <time datetime={data.date.toISOString()}>{monthYear}</time>
         </div>
 
+        <header class="post__entry-heading shell-wide">
+            <h1 class="post__title">{data.title}</h1>
+        </header>
+
         <div class="post__spread shell-wide">
             <div class="post__media" data-gallery>
                 <a
@@ -95,7 +99,6 @@ const lqip = await getImage({
             <aside class="post__field-note">
                 <div class="post__field-number"><span>field entry</span><strong>{indexStr}</strong></div>
                 <p class="post__place">{data.country.replace(/-/g, " ")}</p>
-                <h1 class="post__title">{data.title}</h1>
                 <dl>
                     <div><dt>recorded</dt><dd>{monthYear}</dd></div>
                     <div><dt>latitude</dt><dd>{data.latitude == null ? "—" : fmtLat(data.latitude)}</dd></div>
