@@ -10,6 +10,8 @@
         "preview": "astro preview",
         "astro": "astro",
         "check": "astro check",
+        "import:panoramas": "node scripts/import-panoramas.mjs",
+        "test:panoramas": "node --test scripts/new-panoramas.test.mjs",
         "migrate:posts": "node scripts/migrate-posts.mjs"
     },
     "dependencies": {
