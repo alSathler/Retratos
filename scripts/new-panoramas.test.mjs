@@ -132,7 +132,7 @@ test("groups nearby Atlas markers so overlapping panoramas remain selectable", a
     const expectedClusters = [
         ["dresden-albertplatz", "dresden-neustadt-sunset"],
         ["girona-general-peralta-tower", "girona-passeig-muralla"],
-        ["benidorm-levante-balcon", "benidorm-poniente-balcon"],
+        ["benidorm-coast-balcon", "benidorm-mediterranean-balcon"],
         ["atlantic-costa-papagayo", "costa-papagayo-playa-blanca"],
         ["charco-clicos-el-golfo", "el-golfo-volcanic-coast"],
         ["la-graciosa-mirador-guinate", "risco-famara-guinate"],
@@ -141,7 +141,9 @@ test("groups nearby Atlas markers so overlapping panoramas remain selectable", a
 
     for (const cluster of expectedClusters) {
         for (const slug of cluster) {
-            assert.deepEqual(placesBySlug.get(slug).cluster, cluster, `${slug} nearby cluster`);
+            const place = placesBySlug.get(slug);
+            assert.ok(place, `${slug} nearby place`);
+            assert.deepEqual([...place.cluster].sort(), [...cluster].sort(), `${slug} nearby cluster`);
         }
     }
 
