@@ -107,6 +107,23 @@ test("the floating notebook dissolves into a CSS letterpress stage", () => {
     );
 });
 
+test("the print bridge fades its exposed base color with the page theme", () => {
+    const styles = read("src/styles/global.scss");
+    const bridgeStart = styles.indexOf(".hero__print-bridge {");
+    const bridgeEnd = styles.indexOf("\n}", bridgeStart);
+    const bridge = styles.slice(bridgeStart, bridgeEnd);
+
+    assert.notEqual(bridgeStart, -1);
+    assert.notEqual(bridgeEnd, -1);
+    assert.match(bridge, /background-color:\s*var\(--bg\)/);
+    assert.match(bridge, /transition:\s*background-color 220ms ease/);
+    assert.match(
+        bridge,
+        /linear-gradient\(\s*180deg,[\s\S]*?transparent 100%\s*\)/
+    );
+    assert.doesNotMatch(bridge, /var\(--bg\) 100%/);
+});
+
 test("the mobile notebook label and print bridge stay compact", () => {
     const styles = read("src/styles/global.scss");
     const mobileStart = styles.indexOf("@media (max-width: 720px)");

@@ -453,6 +453,7 @@ button {
     height: clamp(74px, 7vw, 108px);
     margin-top: -1px;
     overflow: hidden;
+    background-color: var(--bg);
     background-image:
         radial-gradient(
             circle at center,
@@ -464,11 +465,12 @@ button {
             var(--notebook-stage) 0%,
             color-mix(in srgb, var(--notebook-stage) 68%, var(--accent)) 46%,
             color-mix(in srgb, var(--bg) 88%, var(--accent)) 78%,
-            var(--bg) 100%
+            transparent 100%
         );
     background-size:
         8px 8px,
         100% 100%;
+    transition: background-color 220ms ease;
 }
 
 .hero__print-bridge::before,
