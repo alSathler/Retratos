@@ -613,6 +613,18 @@ button {
     color: var(--accent);
 }
 
+@media (min-width: 721px) and (max-width: 900px) {
+    .hero__lede {
+        margin-top: 10px;
+        font-size: clamp(14px, 1.8vw, 17px);
+        line-height: 1.15;
+    }
+    .hero__method-note {
+        margin-top: 4px;
+        font-size: 6px;
+    }
+}
+
 @media (max-width: 720px) {
     .hero--notebook {
         padding-top: 16px;

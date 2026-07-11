@@ -83,6 +83,27 @@ test("the mobile cover label clears the copy as a compact three-column strip", (
     );
 });
 
+test("tablet cover copy clears the fixed printed label", () => {
+    const styles = read("src/styles/global.scss");
+    const tabletStart = styles.indexOf(
+        "@media (min-width: 721px) and (max-width: 900px)"
+    );
+    const tabletEnd = styles.indexOf("@media (max-width: 720px)", tabletStart);
+    const tablet = styles.slice(tabletStart, tabletEnd);
+
+    assert.notEqual(tabletStart, -1);
+    assert.notEqual(tabletEnd, -1);
+    assert.match(
+        tablet,
+        /\.hero__lede\s*\{[^}]*margin-top:\s*(?:10|11|12)px/s
+    );
+    assert.match(
+        tablet,
+        /\.hero__method-note\s*\{[^}]*margin-top:\s*(?:4|5)px/s
+    );
+    assert.doesNotMatch(tablet, /\.hero__cover-label\s*\{/);
+});
+
 test("detail uses an image and field-note spread", () => {
     const detail = read("src/pages/[slug].astro");
 
