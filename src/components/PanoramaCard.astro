@@ -18,6 +18,10 @@ const monthYear = data.date.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
 });
+const fmtLat = (value: number) =>
+    `${Math.abs(value).toFixed(4)}° ${value >= 0 ? "N" : "S"}`;
+const fmtLon = (value: number) =>
+    `${Math.abs(value).toFixed(4)}° ${value >= 0 ? "E" : "W"}`;
 
 const postUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/${id}.html`;
 
@@ -35,45 +39,52 @@ const lqip = await getImage({
 });
 ---
 
-<article class="panorama" id={id}>
-    <div class="panorama__index">{indexStr} / {totalStr}</div>
+<article class="log-entry" id={id}>
+    <aside class="log-entry__margin" aria-label={`Entry ${index} of ${total}`}>
+        <span>no.</span>
+        <strong>{indexStr}</strong>
+        <span>/ {totalStr}</span>
+        <time datetime={data.date.toISOString()}>{monthYear}</time>
+    </aside>
 
-    <a
-        class="panorama__frame"
-        href={fullImage.src}
-        data-pswp-width={fullImage.attributes.width ?? data.image.width}
-        data-pswp-height={fullImage.attributes.height ?? data.image.height}
-        data-pswp-src={fullImage.src}
-        data-permalink={postUrl}
-        style={`aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
-        aria-label={`Open ${data.title} in lightbox`}
-    >
-        <Image
-            class="panorama__img"
-            src={data.image}
-            alt={data.alt}
-            widths={[480, 960, 1440]}
-            sizes="(max-width: 720px) 100vw, (max-width: 1180px) 90vw, 1100px"
-            format="webp"
-            loading={index <= 2 ? "eager" : "lazy"}
-            decoding="async"
-        />
-    </a>
+    <div class="log-entry__sheet">
+        <header class="log-entry__head">
+            <div>
+                <p>{data.country.replace(/-/g, " ")}</p>
+                <h2><a href={postUrl}>{data.title}</a></h2>
+            </div>
+            <dl>
+                <div><dt>latitude</dt><dd>{data.latitude == null ? "—" : fmtLat(data.latitude)}</dd></div>
+                <div><dt>longitude</dt><dd>{data.longitude == null ? "—" : fmtLon(data.longitude)}</dd></div>
+            </dl>
+        </header>
 
-    <div class="panorama__caption">
-        <h2 class="panorama__title">
-            <a href={postUrl}>{data.title}</a>
-        </h2>
-        <div class="panorama__meta">
-            <span class="panorama__country">{data.country}</span>
-            {
-                data.latitude != null && data.longitude != null && (
-                    <span>
-                        {data.latitude.toFixed(2)}°&thinsp;·&thinsp;{data.longitude.toFixed(2)}°
-                    </span>
-                )
-            }
-            <span>{monthYear}</span>
-        </div>
+        <a
+            class="log-entry__frame"
+            href={fullImage.src}
+            data-pswp-width={fullImage.attributes.width ?? data.image.width}
+            data-pswp-height={fullImage.attributes.height ?? data.image.height}
+            data-pswp-src={fullImage.src}
+            data-permalink={postUrl}
+            style={`aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
+            aria-label={`Open ${data.title} in lightbox`}
+        >
+            <Image
+                class="log-entry__img"
+                src={data.image}
+                alt={data.alt}
+                widths={[480, 960, 1440]}
+                sizes="(max-width: 720px) 100vw, (max-width: 1180px) 80vw, 980px"
+                format="webp"
+                loading={index <= 2 ? "eager" : "lazy"}
+                decoding="async"
+            />
+        </a>
+
+        <footer class="log-entry__foot">
+            <span>{data.image.width} × {data.image.height} px</span>
+            <span>field note · slow sweep</span>
+            <a href={postUrl}>open field entry →</a>
+        </footer>
     </div>
 </article>

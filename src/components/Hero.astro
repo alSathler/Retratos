@@ -1,5 +1,8 @@
 ---
+import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
+import coverArt from "../../assets/images/field-logbook-cover.png";
+import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
     panoramas: CollectionEntry<"panoramas">[];
@@ -7,25 +10,78 @@ interface Props {
 
 const { panoramas } = Astro.props;
 const total = panoramas.length;
-const countries = new Set(panoramas.map((p) => p.data.country)).size;
+const countryAliases: Record<string, string> = {
+    "czech-republic": "czech",
+};
+const countries = new Set(
+    panoramas.map((p) => countryAliases[p.data.country] ?? p.data.country)
+).size;
 const years = panoramas.map((p) => p.data.date.getFullYear());
 const firstYear = Math.min(...years);
 const lastYear = Math.max(...years);
 const span = firstYear === lastYear ? `${firstYear}` : `${firstYear} – ${lastYear}`;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const mapUrl = `${base}/map`;
 ---
 
-<section class="hero">
-    <div class="shell">
-        <p class="hero__eyebrow">a slow travel journal — {total} places</p>
-        <h1 class="hero__title">panoramas,<br /><em>quiet & wide.</em></h1>
-        <p class="hero__lede">
-            Wide horizons stitched together one frame at a time. All photos taken by hand on an iPhone X with a DJI Osmo Mobile 3.
-        </p>
-        <dl class="hero__meta">
-            <div><dt>frames</dt><dd>{total}</dd></div>
+<section class="hero hero--notebook">
+    <div class="shell-wide hero__notebook">
+        <Image
+            class="hero__notebook-art"
+            src={coverArt}
+            alt=""
+            widths={[960, 1440, 1920]}
+            sizes="(max-width: 720px) 100vw, 92vw"
+            format="webp"
+            loading="eager"
+            decoding="async"
+        />
+
+        <div class="hero__cover-copy">
+            <p class="hero__cover-kicker">
+                <span>field log</span>
+                <strong>01</strong>
+                <span>{span}</span>
+            </p>
+            <h1 class="hero__title">panoramas</h1>
+            <p class="hero__lede">
+                Travel notes in wide frames — cities, coasts, and high places, one slow sweep at a time.
+            </p>
+            <p class="hero__method-note"><span>method</span>hand-held sweep</p>
+        </div>
+
+        <nav class="hero__cover-actions" aria-label="Field log shortcuts">
+            <a class="hero__cover-atlas" href={mapUrl}>
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+                    <circle cx="12" cy="12" r="9.25"></circle>
+                    <path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z"></path>
+                    <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"></circle>
+                </svg>
+                <span>atlas</span>
+                <sup aria-hidden="true">↗</sup>
+            </a>
+            <ThemeToggle />
+        </nav>
+
+        <dl class="hero__cover-label">
+            <div><dt>entries</dt><dd>{total}</dd></div>
             <div><dt>countries</dt><dd>{countries}</dd></div>
-            <div><dt>span</dt><dd>{span}</dd></div>
-            <div><dt>gear</dt><dd>iPhone X · Osmo M3</dd></div>
+            <div><dt>recorded</dt><dd>{span}</dd></div>
         </dl>
+    </div>
+
+    <div class="hero__print-bridge" aria-hidden="true">
+        <div class="hero__perforation">
+            <span>field index</span>
+            <span>{String(total).padStart(2, "0")} plates</span>
+        </div>
     </div>
 </section>

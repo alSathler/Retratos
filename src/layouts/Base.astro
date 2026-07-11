@@ -6,14 +6,15 @@ import SiteHeader from "../components/SiteHeader.astro";
 interface Props {
     title?: string;
     description?: string;
+    showHeader?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, showHeader = true } = Astro.props;
 const siteTitle = "panoramas.";
 const fullTitle = title ? `${title} — ${siteTitle}` : siteTitle;
 const desc =
     description ??
-    "A slow travel journal of hand-taken panoramas — wide horizons stitched one frame at a time, shot on an iPhone X with a DJI Osmo Mobile 3.";
+    "A slow travel journal of hand-taken panoramas — wide horizons gathered one slow sweep at a time.";
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 ---
 
@@ -49,7 +50,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
         />
     </head>
     <body>
-        <SiteHeader />
+        {showHeader && <SiteHeader />}
         <slot />
 
         <script>

@@ -14,7 +14,7 @@ const onMap = pathname === mapUrl || pathname === `${mapUrl}.html`;
 <header class="site-header">
     <div class="shell site-header__inner">
         <a class="site-brand" href={home} rel="author">
-            panoramas<sup>{count} places</sup>
+            panoramas<sup class="site-brand__edition"><span class="site-brand__edition-long">field log</span><span class="site-brand__edition-short">log</span> · {count}</sup>
         </a>
         <nav class="site-nav">
             <a href={mapUrl} aria-current={onMap ? "page" : undefined}>atlas</a>
