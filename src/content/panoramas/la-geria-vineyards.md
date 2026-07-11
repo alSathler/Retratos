@@ -3,7 +3,7 @@ title: "La Geria Vineyards, Lanzarote"
 country: "spain"
 date: "2025-11-04"
 latitude: 28.96963333333333
-longitude: -13.71465333333333
+longitude: -13.714652777777777
 image: ../../../assets/images/la-geria-vineyards.webp
 full:
   src: /images/full/la-geria-vineyards.webp

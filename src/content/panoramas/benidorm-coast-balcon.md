@@ -2,8 +2,8 @@
 title: "Benidorm Coast from Balcó del Mediterrani"
 country: "spain"
 date: "2025-02-09"
-latitude: 38.53393833333333
-longitude: -0.1311278333333333
+latitude: 38.53393888888889
+longitude: -0.1311277777777778
 image: ../../../assets/images/benidorm-coast-balcon.webp
 full:
   src: /images/full/benidorm-coast-balcon.webp

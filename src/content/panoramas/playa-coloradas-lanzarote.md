@@ -2,8 +2,8 @@
 title: "Playa de las Coloradas, Lanzarote"
 country: "spain"
 date: "2025-10-31"
-latitude: 28.85447166666667
-longitude: -13.79465333333333
+latitude: 28.854472222222224
+longitude: -13.794652777777777
 image: ../../../assets/images/playa-coloradas-lanzarote.webp
 full:
   src: /images/full/playa-coloradas-lanzarote.webp

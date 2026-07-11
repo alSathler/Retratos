@@ -2,8 +2,8 @@
 title: "El Golfo Volcanic Coast, Lanzarote"
 country: "spain"
 date: "2025-11-04"
-latitude: 28.978045
-longitude: -13.82877166666667
+latitude: 28.978044444444443
+longitude: -13.828772222222222
 image: ../../../assets/images/el-golfo-volcanic-coast.webp
 full:
   src: /images/full/el-golfo-volcanic-coast.webp

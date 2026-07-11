@@ -2,8 +2,8 @@
 title: "Mediterranean Sea from Balcó del Mediterrani"
 country: "spain"
 date: "2025-02-09"
-latitude: 38.53368833333333
-longitude: -0.1309583333333333
+latitude: 38.53368888888889
+longitude: -0.13095833333333334
 image: ../../../assets/images/benidorm-mediterranean-balcon.webp
 full:
   src: /images/full/benidorm-mediterranean-balcon.webp

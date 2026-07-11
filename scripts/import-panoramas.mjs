@@ -1,17 +1,22 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
+import { parseExifMetadata } from "./heic-exif.mjs";
 import { newPanoramas } from "./new-panoramas.mjs";
 
-const sourceDir = process.argv[2];
+const argumentsList = process.argv.slice(2);
+const metadataOnly = argumentsList.includes("--metadata-only");
+const sourceDir = argumentsList.find((argument) => argument !== "--metadata-only");
 
 if (!sourceDir) {
-    throw new Error("Usage: npm run import:panoramas -- <source-directory>");
+    throw new Error(
+        "Usage: npm run import:panoramas -- [--metadata-only] <source-directory>"
+    );
 }
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -62,7 +67,11 @@ alt: ${JSON.stringify(panorama.alt)}
 try {
     for (const [index, panorama] of newPanoramas.entries()) {
         const sourcePath = join(sourceDir, panorama.source);
-        const temporaryPng = join(temporaryDir, `${panorama.slug}.png`);
+        const temporaryImage = join(
+            temporaryDir,
+            `${panorama.slug}.${metadataOnly ? "jpg" : "png"}`
+        );
+        const temporaryExif = join(temporaryDir, `${panorama.slug}.exif`);
         const displayPath = join(displayDir, `${panorama.slug}.webp`);
         const fullPath = join(fullDir, `${panorama.slug}.webp`);
         const contentPath = join(contentDir, `${panorama.slug}.md`);
@@ -71,38 +80,56 @@ try {
             `[${String(index + 1).padStart(2, "0")}/25] ${panorama.source} → ${panorama.slug}\n`
         );
 
-        run("heif-convert", ["--quiet", sourcePath, temporaryPng]);
-        run("cwebp", [
-            "-quiet",
-            "-mt",
-            "-m",
-            "6",
-            "-q",
-            "90",
-            "-sharp_yuv",
-            "-metadata",
-            "icc",
-            temporaryPng,
-            "-o",
-            fullPath,
+        run("heif-convert", [
+            "--quiet",
+            "--with-exif",
+            ...(metadataOnly ? ["-q", "1"] : []),
+            sourcePath,
+            temporaryImage,
         ]);
-        run("cwebp", [
-            "-quiet",
-            "-mt",
-            "-m",
-            "6",
-            "-q",
-            "82",
-            "-sharp_yuv",
-            "-resize",
-            "2400",
-            "0",
-            "-metadata",
-            "icc",
-            temporaryPng,
-            "-o",
-            displayPath,
-        ]);
+        const sourceMetadata = parseExifMetadata(await readFile(temporaryExif));
+        assert.deepEqual(
+            sourceMetadata,
+            {
+                latitude: panorama.latitude,
+                longitude: panorama.longitude,
+                date: panorama.date,
+            },
+            `${panorama.source} manifest metadata must exactly match its raw EXIF values`
+        );
+        if (!metadataOnly) {
+            run("cwebp", [
+                "-quiet",
+                "-mt",
+                "-m",
+                "6",
+                "-q",
+                "90",
+                "-sharp_yuv",
+                "-metadata",
+                "icc",
+                temporaryImage,
+                "-o",
+                fullPath,
+            ]);
+            run("cwebp", [
+                "-quiet",
+                "-mt",
+                "-m",
+                "6",
+                "-q",
+                "82",
+                "-sharp_yuv",
+                "-resize",
+                "2400",
+                "0",
+                "-metadata",
+                "icc",
+                temporaryImage,
+                "-o",
+                displayPath,
+            ]);
+        }
 
         const [displayMetadata, fullMetadata] = await Promise.all([
             sharp(displayPath).metadata(),
@@ -113,7 +140,8 @@ try {
         assert.equal(fullMetadata.height, panorama.height);
 
         await writeFile(contentPath, frontmatter(panorama), "utf8");
-        await rm(temporaryPng, { force: true });
+        await rm(temporaryImage, { force: true });
+        await rm(temporaryExif, { force: true });
     }
 } finally {
     await rm(temporaryDir, { recursive: true, force: true });

@@ -2,8 +2,8 @@
 title: "Cádiz from Alameda Apodaca"
 country: "spain"
 date: "2026-05-11"
-latitude: 36.53791333333334
-longitude: -6.300308333333334
+latitude: 36.53791388888889
+longitude: -6.300308333333333
 image: ../../../assets/images/cadiz-alameda-apodaca.webp
 full:
   src: /images/full/cadiz-alameda-apodaca.webp

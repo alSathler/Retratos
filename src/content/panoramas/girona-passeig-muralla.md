@@ -2,8 +2,8 @@
 title: "Girona from Passeig de la Muralla"
 country: "spain"
 date: "2025-01-30"
-latitude: 41.98653
-longitude: 2.828413333333333
+latitude: 41.986530555555554
+longitude: 2.8284138888888886
 image: ../../../assets/images/girona-passeig-muralla.webp
 full:
   src: /images/full/girona-passeig-muralla.webp

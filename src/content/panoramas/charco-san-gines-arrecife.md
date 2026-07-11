@@ -2,8 +2,8 @@
 title: "Charco de San Ginés, Arrecife"
 country: "spain"
 date: "2025-10-30"
-latitude: 28.96161166666667
-longitude: -13.54531666666667
+latitude: 28.96161111111111
+longitude: -13.545316666666666
 image: ../../../assets/images/charco-san-gines-arrecife.webp
 full:
   src: /images/full/charco-san-gines-arrecife.webp

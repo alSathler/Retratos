@@ -2,8 +2,8 @@
 title: "Playa del Cura at Dusk, Torrevieja"
 country: "spain"
 date: "2024-11-12"
-latitude: 37.976805
-longitude: -0.6706166666666667
+latitude: 37.97680555555556
+longitude: -0.6706166666666666
 image: ../../../assets/images/playa-cura-torrevieja.webp
 full:
   src: /images/full/playa-cura-torrevieja.webp

@@ -3,7 +3,7 @@ title: "Laguna Rosa, Torrevieja"
 country: "spain"
 date: "2024-11-26"
 latitude: 37.98039166666667
-longitude: -0.7061716666666666
+longitude: -0.7061722222222222
 image: ../../../assets/images/laguna-rosa-torrevieja.webp
 full:
   src: /images/full/laguna-rosa-torrevieja.webp

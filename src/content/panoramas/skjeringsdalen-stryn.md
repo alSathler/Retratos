@@ -2,7 +2,7 @@
 title: "Skjeringsdalen, Stryn"
 country: "norway"
 date: "2025-06-23"
-latitude: 61.96401166666666
+latitude: 61.96401111111111
 longitude: 7.252783333333333
 image: ../../../assets/images/skjeringsdalen-stryn.webp
 full:
