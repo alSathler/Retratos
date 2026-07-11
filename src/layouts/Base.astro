@@ -6,9 +6,10 @@ import SiteHeader from "../components/SiteHeader.astro";
 interface Props {
     title?: string;
     description?: string;
+    showHeader?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, showHeader = true } = Astro.props;
 const siteTitle = "panoramas.";
 const fullTitle = title ? `${title} — ${siteTitle}` : siteTitle;
 const desc =
@@ -49,7 +50,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
         />
     </head>
     <body>
-        <SiteHeader />
+        {showHeader && <SiteHeader />}
         <slot />
 
         <script>

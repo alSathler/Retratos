@@ -10,7 +10,7 @@ const panoramas = (await getCollection("panoramas")).sort(
 const total = panoramas.length;
 ---
 
-<Base>
+<Base showHeader={false}>
     <main>
         <Hero panoramas={panoramas} />
 

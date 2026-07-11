@@ -10,8 +10,10 @@ test("home uses a physical notebook cover above numbered entries", () => {
 
     assert.match(hero, /field-logbook-cover\.png/);
     assert.match(hero, /hero__notebook/);
-    assert.match(hero, /hero__photo-strip/);
-    assert.match(hero, /coverPanorama = panoramas\.at\(-1\)/);
+    assert.match(hero, /ThemeToggle/);
+    assert.match(hero, /hero__cover-actions/);
+    assert.doesNotMatch(hero, /hero__photo-strip/);
+    assert.doesNotMatch(hero, /coverPanorama/);
     assert.doesNotMatch(hero, /hero__folio/);
     assert.ok(
         existsSync(
@@ -20,6 +22,40 @@ test("home uses a physical notebook cover above numbered entries", () => {
     );
     assert.match(read("src/components/PanoramaCard.astro"), /log-entry__margin/);
     assert.match(read("src/pages/index.astro"), /gallery--logbook/);
+});
+
+test("the A homepage replaces its global header with cover controls", () => {
+    const base = read("src/layouts/Base.astro");
+    const home = read("src/pages/index.astro");
+    const hero = read("src/components/Hero.astro");
+
+    assert.match(base, /showHeader\?: boolean/);
+    assert.match(base, /showHeader = true/);
+    assert.match(base, /\{showHeader && <SiteHeader \/>\}/);
+    assert.match(home, /<Base showHeader=\{false\}>/);
+    assert.match(hero, /ThemeToggle/);
+    assert.match(hero, /hero__cover-actions/);
+    assert.match(hero, /hero__cover-atlas/);
+    assert.match(hero, /hero__cover-label/);
+    assert.match(hero, /hero__method-note/);
+});
+
+test("the closed cover uses its baked panorama and compact label", () => {
+    const hero = read("src/components/Hero.astro");
+    const labelStart = hero.indexOf('<dl class="hero__cover-label">');
+    const labelEnd = hero.indexOf("</dl>", labelStart);
+
+    assert.notEqual(labelStart, -1);
+    assert.notEqual(labelEnd, -1);
+
+    const label = hero.slice(labelStart, labelEnd);
+    assert.match(label, /entries/);
+    assert.match(label, /countries/);
+    assert.match(label, /recorded/);
+    assert.doesNotMatch(label, /method/);
+    assert.doesNotMatch(hero, /coverPanorama/);
+    assert.doesNotMatch(hero, /coverDate/);
+    assert.doesNotMatch(hero, /hero__photo-strip/);
 });
 
 test("detail uses an image and field-note spread", () => {
