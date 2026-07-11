@@ -212,7 +212,10 @@ button {
 
 // ── hero (home) ─────────────────────────────────────────────────────────────
 .hero--notebook {
-    padding: clamp(28px, 4vw, 54px) 0 clamp(72px, 8vw, 116px);
+    --notebook-stage: #171817;
+
+    padding: clamp(18px, 2.6vw, 38px) 0 0;
+    background: var(--notebook-stage);
 }
 
 .hero__notebook {
@@ -224,6 +227,15 @@ button {
     padding: 0;
     overflow: hidden;
     isolation: isolate;
+}
+
+.hero__notebook::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    box-shadow: inset 0 0 clamp(20px, 2vw, 32px) var(--notebook-stage);
+    pointer-events: none;
 }
 
 .hero__notebook-art {
@@ -436,6 +448,81 @@ button {
     white-space: nowrap;
 }
 
+.hero__print-bridge {
+    position: relative;
+    height: clamp(74px, 7vw, 108px);
+    margin-top: -1px;
+    overflow: hidden;
+    background-image:
+        radial-gradient(
+            circle at center,
+            color-mix(in srgb, var(--accent) 24%, transparent) 0 0.75px,
+            transparent 0.9px
+        ),
+        linear-gradient(
+            180deg,
+            var(--notebook-stage) 0%,
+            color-mix(in srgb, var(--notebook-stage) 68%, var(--accent)) 46%,
+            color-mix(in srgb, var(--bg) 88%, var(--accent)) 78%,
+            var(--bg) 100%
+        );
+    background-size:
+        8px 8px,
+        100% 100%;
+}
+
+.hero__print-bridge::before,
+.hero__print-bridge::after {
+    content: "";
+    position: absolute;
+    top: clamp(12px, 1.6vw, 22px);
+    width: 22px;
+    height: 22px;
+    background:
+        linear-gradient(var(--accent), var(--accent)) 50% 0 / 1px 100%
+            no-repeat,
+        linear-gradient(90deg, var(--accent), var(--accent)) 0 50% / 100% 1px
+            no-repeat;
+    opacity: 0.42;
+}
+
+.hero__print-bridge::before {
+    left: var(--gutter);
+}
+
+.hero__print-bridge::after {
+    right: var(--gutter);
+}
+
+.hero__perforation {
+    position: absolute;
+    inset-inline: var(--gutter);
+    bottom: clamp(8px, 1vw, 14px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    color: color-mix(in srgb, var(--accent) 78%, var(--ink));
+    font-family: var(--font-mono);
+    font-size: 7px;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.hero__perforation::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background: repeating-linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--accent) 58%, transparent) 0 5px,
+        transparent 5px 10px
+    );
+}
+
 // ── gallery ─────────────────────────────────────────────────────────────────
 .gallery {
     padding: 0 0 clamp(80px, 10vw, 140px);
@@ -451,6 +538,11 @@ button {
 
 .log-entry:first-of-type {
     border-top: 1px solid var(--rule-strong);
+    padding-top: clamp(28px, 4vw, 48px);
+}
+
+.gallery--logbook .log-entry:first-of-type {
+    border-top: 0;
     padding-top: clamp(28px, 4vw, 48px);
 }
 
@@ -626,10 +718,6 @@ button {
 }
 
 @media (max-width: 720px) {
-    .hero--notebook {
-        padding-top: 16px;
-        padding-bottom: 68px;
-    }
     .hero__notebook {
         width: calc(100% - 24px);
         aspect-ratio: 4 / 5;
@@ -695,6 +783,7 @@ button {
         left: 8%;
         width: auto;
         min-height: 50px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         padding: 7px 8px;
         border: 1px solid rgba(47, 35, 24, 0.58);
         background: rgba(191, 154, 108, 0.94);
@@ -709,6 +798,19 @@ button {
     }
     .hero__cover-label dd {
         font-size: clamp(8px, 2.5vw, 11px);
+    }
+    .hero__print-bridge {
+        height: 64px;
+    }
+    .hero__print-bridge::before {
+        left: 20px;
+    }
+    .hero__print-bridge::after {
+        right: 20px;
+    }
+    .hero__perforation {
+        inset-inline: 20px;
+        bottom: 7px;
     }
     .log-entry {
         grid-template-columns: 1fr;
@@ -1092,5 +1194,17 @@ button {
     *::after {
         animation-duration: 0.001ms !important;
         transition-duration: 0.001ms !important;
+    }
+
+    .hero__cover-atlas,
+    .hero__cover-actions .theme-toggle {
+        transition: none;
+    }
+
+    .hero__cover-atlas:hover,
+    .hero__cover-atlas:active,
+    .hero__cover-actions .theme-toggle:hover,
+    .hero__cover-actions .theme-toggle:active {
+        transform: none;
     }
 }

@@ -83,6 +83,52 @@ test("the mobile cover label clears the copy as a compact three-column strip", (
     );
 });
 
+test("the floating notebook dissolves into a CSS letterpress stage", () => {
+    const hero = read("src/components/Hero.astro");
+    const styles = read("src/styles/global.scss");
+
+    assert.match(hero, /hero__print-bridge/);
+    assert.match(hero, /hero__perforation/);
+    assert.match(hero, /field index/);
+    assert.match(hero, /\{String\(total\)\.padStart\(2, "0"\)\} plates/);
+    assert.match(styles, /--notebook-stage:\s*#171817/);
+    assert.match(
+        styles,
+        /\.hero__print-bridge\s*\{[^}]*radial-gradient/s
+    );
+    assert.match(styles, /\.hero__perforation/);
+    assert.match(
+        styles,
+        /\.gallery--logbook \.log-entry:first-of-type\s*\{[^}]*border-top:\s*0/s
+    );
+    assert.doesNotMatch(
+        hero,
+        /(?:desk|stage|pattern|texture)[^\s"'`]*\.(?:avif|gif|jpe?g|png|webp)/i
+    );
+});
+
+test("the mobile notebook label and print bridge stay compact", () => {
+    const styles = read("src/styles/global.scss");
+    const mobileStart = styles.indexOf("@media (max-width: 720px)");
+    const mobileEnd = styles.indexOf("// ── colophon", mobileStart);
+    const mobile = styles.slice(mobileStart, mobileEnd);
+
+    assert.notEqual(mobileStart, -1);
+    assert.notEqual(mobileEnd, -1);
+    assert.match(
+        mobile,
+        /\.hero__cover-label\s*\{[^}]*grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/s
+    );
+    assert.match(
+        mobile,
+        /\.hero__print-bridge\s*\{[^}]*height:\s*64px/s
+    );
+    assert.match(
+        mobile,
+        /\.hero__perforation\s*\{[^}]*inset-inline:\s*20px/s
+    );
+});
+
 test("tablet cover copy clears the fixed printed label", () => {
     const styles = read("src/styles/global.scss");
     const tabletStart = styles.indexOf(
