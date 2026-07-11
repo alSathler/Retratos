@@ -58,28 +58,35 @@ test("the closed cover uses its baked panorama and compact label", () => {
     assert.doesNotMatch(hero, /hero__photo-strip/);
 });
 
-test("the mobile cover label clears the copy as a compact three-column strip", () => {
+test("the mobile cover copy and label clear the controls as a compact strip", () => {
     const styles = read("src/styles/global.scss");
     const mobileStart = styles.indexOf("@media (max-width: 720px)");
     const mobileEnd = styles.indexOf("// ── colophon", mobileStart);
     const mobile = styles.slice(mobileStart, mobileEnd);
+    const copyStart = mobile.indexOf(".hero__cover-copy {");
+    const copyEnd = mobile.indexOf("}", copyStart);
+    const copy = mobile.slice(copyStart, copyEnd);
     const labelStart = mobile.indexOf(".hero__cover-label {");
     const labelEnd = mobile.indexOf("}", labelStart);
     const label = mobile.slice(labelStart, labelEnd);
-    const desktopLabelStart = styles.indexOf(".hero__cover-label {");
-    const desktopLabelEnd = styles.indexOf("}", desktopLabelStart);
-    const desktopLabel = styles.slice(desktopLabelStart, desktopLabelEnd);
 
     assert.notEqual(mobileStart, -1);
     assert.notEqual(mobileEnd, -1);
+    assert.notEqual(copyStart, -1);
     assert.notEqual(labelStart, -1);
-    assert.match(label, /top:\s*64%/);
     assert.match(label, /right:\s*8%/);
     assert.match(label, /left:\s*8%/);
     assert.match(label, /min-height:\s*50px/);
     assert.match(
-        desktopLabel,
+        label,
         /grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/
+    );
+    assert.deepEqual(
+        [
+            copy.match(/top:\s*([^;]+);/)?.[1],
+            label.match(/top:\s*([^;]+);/)?.[1],
+        ],
+        ["17%", "67%"]
     );
 });
 
