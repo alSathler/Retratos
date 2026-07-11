@@ -97,3 +97,77 @@ test("renders a base-aware full-resolution link on every imported detail page", 
         assert.ok(html.includes(expectedDimensions), `${panorama.slug} native dimensions`);
     }
 });
+
+test("renders all imported panoramas in Atlas with exact coordinates", async () => {
+    const html = await readFile(new URL("dist/map.html", repoRoot), "utf8");
+    const match = html.match(/const places = (\[.*?\]);\s*const PROJ =/s);
+
+    assert.ok(match, "Atlas must embed its places data");
+    const places = JSON.parse(match[1]);
+    const placesBySlug = new Map(places.map((place) => [place.slug, place]));
+
+    assert.equal(places.length, 44);
+    assert.ok(html.includes("<em data-astro-cid-mtmprebk>44</em> places"));
+
+    for (const panorama of newPanoramas) {
+        const place = placesBySlug.get(panorama.slug);
+
+        assert.ok(place, `${panorama.slug} Atlas place`);
+        assert.equal(place.title, panorama.title, `${panorama.slug} Atlas title`);
+        assert.equal(place.latitude, undefined, `${panorama.slug} does not rename lat`);
+        assert.equal(place.lat, panorama.latitude, `${panorama.slug} Atlas latitude`);
+        assert.equal(place.lon, panorama.longitude, `${panorama.slug} Atlas longitude`);
+        assert.equal(place.url, `/panoramas/${panorama.slug}.html`, `${panorama.slug} Atlas URL`);
+        assert.match(place.thumb, /^\/panoramas\/_astro\/.+\.webp$/);
+        assert.ok(html.includes(`class="row" type="button" data-slug="${panorama.slug}"`));
+        assert.ok(html.includes(`class="pin" data-slug="${panorama.slug}"`));
+    }
+});
+
+test("groups nearby Atlas markers so overlapping panoramas remain selectable", async () => {
+    const html = await readFile(new URL("dist/map.html", repoRoot), "utf8");
+    const match = html.match(/const places = (\[.*?\]);\s*const PROJ =/s);
+    const places = JSON.parse(match[1]);
+    const placesBySlug = new Map(places.map((place) => [place.slug, place]));
+    const expectedClusters = [
+        ["dresden-albertplatz", "dresden-neustadt-sunset"],
+        ["girona-general-peralta-tower", "girona-passeig-muralla"],
+        ["benidorm-levante-balcon", "benidorm-poniente-balcon"],
+        ["atlantic-costa-papagayo", "costa-papagayo-playa-blanca"],
+        ["charco-clicos-el-golfo", "el-golfo-volcanic-coast"],
+        ["la-graciosa-mirador-guinate", "risco-famara-guinate"],
+        ["cadiz-alameda-apodaca", "cadiz-atlantic-horizon"],
+    ];
+
+    for (const cluster of expectedClusters) {
+        for (const slug of cluster) {
+            assert.deepEqual(placesBySlug.get(slug).cluster, cluster, `${slug} nearby cluster`);
+        }
+    }
+
+    assert.ok(html.includes("function focusPin(slug)"));
+});
+
+test("renders a mobile place picker with every Atlas entry", async () => {
+    const html = await readFile(new URL("dist/map.html", repoRoot), "utf8");
+    const picker = html.match(/<select[^>]*id="place-picker"[^>]*>[\s\S]*?<\/select>/);
+
+    assert.ok(picker, "Atlas must render a mobile place picker");
+    assert.equal((picker[0].match(/<option/g) ?? []).length, 45);
+
+    for (const panorama of newPanoramas) {
+        assert.ok(picker[0].includes(`value="${panorama.slug}"`), `${panorama.slug} picker option`);
+        assert.ok(picker[0].includes(panorama.title), `${panorama.slug} picker title`);
+    }
+});
+
+test("applies the mobile logbook hiding rule after the base logbook display", async () => {
+    const source = await readFile(new URL("src/components/WorldMap.astro", repoRoot), "utf8");
+    const baseRuleIndex = source.indexOf("\n    .logbook {");
+    const mobileHideIndex = source.lastIndexOf(
+        "@media (max-width: 820px) {\n        .logbook {\n            display: none;"
+    );
+
+    assert.ok(baseRuleIndex >= 0, "Atlas must define the base logbook rule");
+    assert.ok(mobileHideIndex > baseRuleIndex, "mobile display:none must win the CSS cascade");
+});
