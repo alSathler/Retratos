@@ -85,3 +85,15 @@ test("generates display, full-resolution, and content files for every import", a
         assert.ok(content.includes(`height: ${panorama.height}`));
     }
 });
+
+test("renders a base-aware full-resolution link on every imported detail page", async () => {
+    for (const panorama of newPanoramas) {
+        const html = await readFile(new URL(`dist/${panorama.slug}.html`, repoRoot), "utf8");
+        const expectedHref = `/panoramas/images/full/${panorama.slug}.webp`;
+        const expectedDimensions = `${panorama.width} × ${panorama.height} px`;
+
+        assert.ok(html.includes(`href="${expectedHref}"`), `${panorama.slug} full href`);
+        assert.ok(html.includes("full resolution"), `${panorama.slug} full label`);
+        assert.ok(html.includes(expectedDimensions), `${panorama.slug} native dimensions`);
+    }
+});

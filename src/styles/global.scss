@@ -522,6 +522,24 @@ button {
     transform: translateY(-2px);
 }
 
+.post__full-link {
+    color: var(--ink-muted);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 4px;
+    transition: color 180ms ease, text-decoration-color 180ms ease;
+}
+
+.post__full-link:hover {
+    color: var(--ink);
+    text-decoration-color: var(--accent);
+}
+
+.post__full-link:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
+}
+
 .post-nav {
     display: grid;
     grid-template-columns: 1fr 1fr;

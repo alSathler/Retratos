@@ -39,6 +39,7 @@ const monthYear = data.date.toLocaleDateString("en-US", {
 const fmtLat = (v: number) => `${Math.abs(v).toFixed(4)}° ${v >= 0 ? "N" : "S"}`;
 const fmtLon = (v: number) => `${Math.abs(v).toFixed(4)}° ${v >= 0 ? "E" : "W"}`;
 const mapUrl = `${base}/map#${panorama.id}`;
+const fullImageUrl = data.full ? `${base}${data.full.src}` : null;
 
 const fullImage = await getImage({
     src: data.image,
@@ -97,6 +98,13 @@ const lqip = await getImage({
             }
             <span>{monthYear}</span>
             <span>{data.image.width} × {data.image.height} px</span>
+            {
+                data.full && fullImageUrl && (
+                    <a class="post__full-link" href={fullImageUrl} target="_blank" rel="noopener">
+                        full resolution · {data.full.width} × {data.full.height} px ↗
+                    </a>
+                )
+            }
         </div>
 
         <nav class="post-nav">

@@ -11,6 +11,13 @@ const panoramas = defineCollection({
             latitude: z.number().optional(),
             longitude: z.number().optional(),
             image: image(),
+            full: z
+                .object({
+                    src: z.string().regex(/^\/images\/full\/[a-z0-9-]+\.webp$/),
+                    width: z.number().int().positive(),
+                    height: z.number().int().positive(),
+                })
+                .optional(),
             alt: z.string(),
         }),
 });
