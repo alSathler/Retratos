@@ -400,6 +400,9 @@ git commit -m "feat: import 11 panos2 panoramas"
 **Files:**
 - Modify: `scripts/panos2-panoramas.test.mjs`
 - Modify: `scripts/new-panoramas.test.mjs`
+- Modify: `docs/superpowers/plans/2026-07-12-panos2-integration.md`
+
+Atlas clusters use a Euclidean coordinate radius: a candidate belongs to a place's neighborhood when `Math.hypot(candidate.lat - place.lat, candidate.lon - place.lon) <= 0.005`. The exact per-place neighborhoods below include the place itself; together with direct picker coverage, that proves each nearby panorama remains independently selectable.
 
 - [ ] **Step 1: Write failing rendered-output tests**
 
@@ -446,20 +449,60 @@ test("keeps nearby panos2 Atlas markers independently selectable", async () => {
     const match = html.match(/const places = (\[.*?\]);\s*const PROJ =/s);
     const places = JSON.parse(match[1]);
     const placesBySlug = new Map(places.map((place) => [place.slug, place]));
-    const clusters = [
-    ["st-marks-basilica-venice", "canal-frezzaria-venice", "gondolas-grand-canal-venice", "grand-canal-riva-del-vin"],
-    ["florence-viale-giuseppe-poggi", "florence-ponte-vecchio-piazzale-michelangelo"],
-    ["imperial-fora-vittoriano", "roman-forum-septimius-severus"],
-    ];
+    const expectedClusters = new Map([
+        [
+            "st-marks-basilica-venice",
+            ["canal-frezzaria-venice", "st-marks-basilica-venice"],
+        ],
+        [
+            "canal-frezzaria-venice",
+            [
+                "canal-frezzaria-venice",
+                "gondolas-grand-canal-venice",
+                "grand-canal-riva-del-vin",
+                "st-marks-basilica-venice",
+            ],
+        ],
+        [
+            "gondolas-grand-canal-venice",
+            [
+                "canal-frezzaria-venice",
+                "gondolas-grand-canal-venice",
+                "grand-canal-riva-del-vin",
+            ],
+        ],
+        [
+            "grand-canal-riva-del-vin",
+            [
+                "canal-frezzaria-venice",
+                "gondolas-grand-canal-venice",
+                "grand-canal-riva-del-vin",
+            ],
+        ],
+        [
+            "florence-viale-giuseppe-poggi",
+            ["florence-ponte-vecchio-piazzale-michelangelo", "florence-viale-giuseppe-poggi"],
+        ],
+        [
+            "florence-ponte-vecchio-piazzale-michelangelo",
+            ["florence-ponte-vecchio-piazzale-michelangelo", "florence-viale-giuseppe-poggi"],
+        ],
+        [
+            "imperial-fora-vittoriano",
+            ["imperial-fora-vittoriano", "roman-forum-septimius-severus"],
+        ],
+        [
+            "roman-forum-septimius-severus",
+            ["imperial-fora-vittoriano", "roman-forum-septimius-severus"],
+        ],
+    ]);
 
-    for (const cluster of clusters) {
-        for (const slug of cluster) {
-            assert.deepEqual(
-                [...placesBySlug.get(slug).cluster].sort(),
-                [...cluster].sort(),
-                `${slug} nearby cluster`
-            );
-        }
+    for (const [slug, cluster] of expectedClusters) {
+        assert.deepEqual(
+            [...placesBySlug.get(slug).cluster].sort(),
+            [...cluster].sort(),
+            `${slug} nearby cluster`
+        );
     }
 });
 ```
@@ -493,7 +536,7 @@ Expected: all tests pass, Atlas reports 55 places, and the picker contains 56 op
 - [ ] **Step 5: Commit the Atlas verification updates**
 
 ```bash
-git add scripts/panos2-panoramas.test.mjs scripts/new-panoramas.test.mjs
+git add scripts/panos2-panoramas.test.mjs scripts/new-panoramas.test.mjs docs/superpowers/plans/2026-07-12-panos2-integration.md
 git commit -m "test: verify panos2 Atlas integration"
 ```
 

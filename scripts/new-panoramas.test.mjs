@@ -106,8 +106,8 @@ test("renders all imported panoramas in Atlas with exact coordinates", async () 
     const places = JSON.parse(match[1]);
     const placesBySlug = new Map(places.map((place) => [place.slug, place]));
 
-    assert.equal(places.length, 44);
-    assert.ok(html.includes("<em data-astro-cid-mtmprebk>44</em> places"));
+    assert.equal(places.length, 55);
+    assert.ok(html.includes("<em data-astro-cid-mtmprebk>55</em> places"));
 
     for (const panorama of newPanoramas) {
         const place = placesBySlug.get(panorama.slug);
@@ -155,7 +155,7 @@ test("renders a mobile place picker with every Atlas entry", async () => {
     const picker = html.match(/<select[^>]*id="place-picker"[^>]*>[\s\S]*?<\/select>/);
 
     assert.ok(picker, "Atlas must render a mobile place picker");
-    assert.equal((picker[0].match(/<option/g) ?? []).length, 45);
+    assert.equal((picker[0].match(/<option/g) ?? []).length, 56);
 
     for (const panorama of newPanoramas) {
         assert.ok(picker[0].includes(`value="${panorama.slug}"`), `${panorama.slug} picker option`);

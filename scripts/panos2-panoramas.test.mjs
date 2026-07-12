@@ -84,12 +84,130 @@ test("generates display, full-resolution, and content files for every included p
     }
 });
 
+test("renders full-resolution links for every panos2 detail page", async () => {
+    for (const panorama of panos2Batch.panoramas) {
+        const html = await readFile(new URL(`dist/${panorama.slug}.html`, repoRoot), "utf8");
+
+        assert.ok(
+            html.includes(`href="/panoramas/images/full/${panorama.slug}.webp"`),
+            `${panorama.slug} full href`
+        );
+        assert.ok(
+            html.includes(`${panorama.width} × ${panorama.height} px`),
+            `${panorama.slug} native dimensions`
+        );
+    }
+});
+
+test("renders all panos2 entries in Atlas with exact metadata", async () => {
+    const html = await readFile(new URL("dist/map.html", repoRoot), "utf8");
+    const match = html.match(/const places = (\[.*?\]);\s*const PROJ =/s);
+    const picker = html.match(/<select[^>]*id="place-picker"[^>]*>[\s\S]*?<\/select>/);
+
+    assert.ok(match, "Atlas must embed its places data");
+    assert.ok(picker, "Atlas must render a mobile place picker");
+
+    const places = JSON.parse(match[1]);
+    const placesBySlug = new Map(places.map((place) => [place.slug, place]));
+    const pickerOptions = new Map(
+        [...picker[0].matchAll(/<option value="([^"]*)"[^>]*>(.*?)<\/option>/g)]
+            .map((option) => [option[1], option[2]])
+    );
+
+    assert.equal(places.length, 55);
+    assert.match(html, /<em[^>]*>55<\/em> places/);
+    assert.equal(pickerOptions.size, 56);
+
+    for (const panorama of panos2Batch.panoramas) {
+        const place = placesBySlug.get(panorama.slug);
+
+        assert.ok(place, `${panorama.slug} Atlas place`);
+        assert.equal(place.title, panorama.title, `${panorama.slug} Atlas title`);
+        assert.equal(place.lat, panorama.latitude, `${panorama.slug} Atlas latitude`);
+        assert.equal(place.lon, panorama.longitude, `${panorama.slug} Atlas longitude`);
+        assert.equal(place.url, `/panoramas/${panorama.slug}.html`, `${panorama.slug} Atlas URL`);
+        assert.match(place.thumb, /^\/panoramas\/_astro\/.+\.webp$/);
+        assert.ok(html.includes(`class="row" type="button" data-slug="${panorama.slug}"`));
+        assert.ok(html.includes(`class="pin" data-slug="${panorama.slug}"`));
+        assert.equal(pickerOptions.get(panorama.slug), panorama.title, `${panorama.slug} picker option`);
+    }
+
+    const [{ forbiddenSlug }] = panos2Batch.excludedSources;
+    assert.equal(placesBySlug.has(forbiddenSlug), false, `${forbiddenSlug} excluded from Atlas places`);
+    assert.equal(pickerOptions.has(forbiddenSlug), false, `${forbiddenSlug} excluded from Atlas picker`);
+});
+
+test("keeps nearby panos2 Atlas markers independently selectable", async () => {
+    const html = await readFile(new URL("dist/map.html", repoRoot), "utf8");
+    const match = html.match(/const places = (\[.*?\]);\s*const PROJ =/s);
+
+    assert.ok(match, "Atlas must embed its places data");
+
+    const places = JSON.parse(match[1]);
+    const placesBySlug = new Map(places.map((place) => [place.slug, place]));
+    const expectedClusters = new Map([
+        [
+            "st-marks-basilica-venice",
+            ["canal-frezzaria-venice", "st-marks-basilica-venice"],
+        ],
+        [
+            "canal-frezzaria-venice",
+            [
+                "canal-frezzaria-venice",
+                "gondolas-grand-canal-venice",
+                "grand-canal-riva-del-vin",
+                "st-marks-basilica-venice",
+            ],
+        ],
+        [
+            "gondolas-grand-canal-venice",
+            [
+                "canal-frezzaria-venice",
+                "gondolas-grand-canal-venice",
+                "grand-canal-riva-del-vin",
+            ],
+        ],
+        [
+            "grand-canal-riva-del-vin",
+            [
+                "canal-frezzaria-venice",
+                "gondolas-grand-canal-venice",
+                "grand-canal-riva-del-vin",
+            ],
+        ],
+        [
+            "florence-viale-giuseppe-poggi",
+            ["florence-ponte-vecchio-piazzale-michelangelo", "florence-viale-giuseppe-poggi"],
+        ],
+        [
+            "florence-ponte-vecchio-piazzale-michelangelo",
+            ["florence-ponte-vecchio-piazzale-michelangelo", "florence-viale-giuseppe-poggi"],
+        ],
+        [
+            "imperial-fora-vittoriano",
+            ["imperial-fora-vittoriano", "roman-forum-septimius-severus"],
+        ],
+        [
+            "roman-forum-septimius-severus",
+            ["imperial-fora-vittoriano", "roman-forum-septimius-severus"],
+        ],
+    ]);
+
+    for (const [slug, cluster] of expectedClusters) {
+        const place = placesBySlug.get(slug);
+
+        assert.ok(place, `${slug} nearby place`);
+        assert.deepEqual([...place.cluster].sort(), [...cluster].sort(), `${slug} nearby cluster`);
+    }
+});
+
 test("does not generate assets or content for the excluded duplicate", async () => {
     const [{ forbiddenSlug }] = panos2Batch.excludedSources;
     const forbiddenUrls = [
         new URL(`assets/images/${forbiddenSlug}.webp`, repoRoot),
         new URL(`public/images/full/${forbiddenSlug}.webp`, repoRoot),
         new URL(`src/content/panoramas/${forbiddenSlug}.md`, repoRoot),
+        new URL(`dist/${forbiddenSlug}.html`, repoRoot),
     ];
 
     for (const forbiddenUrl of forbiddenUrls) {
