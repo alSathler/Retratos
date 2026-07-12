@@ -7,17 +7,15 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 import { parseExifMetadata } from "./heic-exif.mjs";
-import { newPanoramas } from "./new-panoramas.mjs";
+import {
+    expectedSourceFiles,
+    parseImportArguments,
+} from "./panorama-batches.mjs";
 
-const argumentsList = process.argv.slice(2);
-const metadataOnly = argumentsList.includes("--metadata-only");
-const sourceDir = argumentsList.find((argument) => argument !== "--metadata-only");
-
-if (!sourceDir) {
-    throw new Error(
-        "Usage: npm run import:panoramas -- [--metadata-only] <source-directory>"
-    );
-}
+const { batch, sourceDir, metadataOnly } = parseImportArguments(
+    process.argv.slice(2)
+);
+const panoramas = batch.panoramas;
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const displayDir = join(repoRoot, "assets/images");
@@ -27,12 +25,11 @@ const contentDir = join(repoRoot, "src/content/panoramas");
 const actualSources = (await readdir(sourceDir))
     .filter((file) => file.toLowerCase().endsWith(".heic"))
     .sort();
-const expectedSources = newPanoramas.map((panorama) => panorama.source).sort();
 
 assert.deepEqual(
     actualSources,
-    expectedSources,
-    "Source directory must contain exactly the 25 HEIC files in the manifest"
+    expectedSourceFiles(batch),
+    `Source directory must contain exactly the HEIC files for ${batch.name}`
 );
 
 await Promise.all([
@@ -65,7 +62,7 @@ alt: ${JSON.stringify(panorama.alt)}
 }
 
 try {
-    for (const [index, panorama] of newPanoramas.entries()) {
+    for (const [index, panorama] of panoramas.entries()) {
         const sourcePath = join(sourceDir, panorama.source);
         const temporaryImage = join(
             temporaryDir,
@@ -77,7 +74,7 @@ try {
         const contentPath = join(contentDir, `${panorama.slug}.md`);
 
         process.stdout.write(
-            `[${String(index + 1).padStart(2, "0")}/25] ${panorama.source} → ${panorama.slug}\n`
+            `[${String(index + 1).padStart(2, "0")}/${panoramas.length}] ${panorama.source} → ${panorama.slug}\n`
         );
 
         run("heif-convert", [
@@ -147,4 +144,9 @@ try {
     await rm(temporaryDir, { recursive: true, force: true });
 }
 
-console.log(`Imported ${newPanoramas.length} panoramas`);
+console.log(
+    `Imported ${panoramas.length} panoramas from ${batch.name}` +
+        (batch.excludedSources.length
+            ? ` (${batch.excludedSources.length} excluded)`
+            : "")
+);
