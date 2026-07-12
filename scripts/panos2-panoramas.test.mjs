@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
+import { access, readFile, stat } from "node:fs/promises";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 
 import { panos2Batch } from "./panos2-panoramas.mjs";
+
+const repoRoot = new URL("../", import.meta.url);
 
 const expectedPanoramas = [
     { source: "IMG_3161.HEIC", slug: "st-marks-basilica-venice", title: "St Mark’s Basilica, Venice", country: "italy", date: "2024-02-08", latitude: 45.43472222222222, longitude: 12.339002777777779, width: 14966, height: 3788, alt: "Panoramic view of St Mark’s Basilica and Campanile in Venice" },
@@ -47,5 +52,47 @@ test("defines valid metadata for every included panos2 panorama", () => {
         assert.ok(Number.isInteger(panorama.width) && panorama.width > 2400);
         assert.ok(Number.isInteger(panorama.height) && panorama.height > 0);
         assert.ok(panorama.alt.startsWith("Panoramic view of"));
+    }
+});
+
+test("generates display, full-resolution, and content files for every included panorama", async () => {
+    for (const panorama of panos2Batch.panoramas) {
+        const displayUrl = new URL(`assets/images/${panorama.slug}.webp`, repoRoot);
+        const fullUrl = new URL(`public/images/full/${panorama.slug}.webp`, repoRoot);
+        const contentUrl = new URL(`src/content/panoramas/${panorama.slug}.md`, repoRoot);
+
+        await access(displayUrl);
+        const display = await sharp(fileURLToPath(displayUrl)).metadata();
+        const full = await sharp(fileURLToPath(fullUrl)).metadata();
+        const fullStats = await stat(fullUrl);
+        const content = await readFile(contentUrl, "utf8");
+
+        assert.equal(display.format, "webp", `${panorama.slug} display format`);
+        assert.equal(display.width, 2400, `${panorama.slug} display width`);
+        assert.equal(full.format, "webp", `${panorama.slug} full format`);
+        assert.equal(full.width, panorama.width, `${panorama.slug} full width`);
+        assert.equal(full.height, panorama.height, `${panorama.slug} full height`);
+        assert.ok(fullStats.size > 0, `${panorama.slug} full file size`);
+        assert.ok(content.includes(`title: ${JSON.stringify(panorama.title)}`));
+        assert.ok(content.includes(`date: ${JSON.stringify(panorama.date)}`));
+        assert.ok(content.includes(`latitude: ${panorama.latitude}`));
+        assert.ok(content.includes(`longitude: ${panorama.longitude}`));
+        assert.ok(content.includes(`image: ../../../assets/images/${panorama.slug}.webp`));
+        assert.ok(content.includes(`src: /images/full/${panorama.slug}.webp`));
+        assert.ok(content.includes(`width: ${panorama.width}`));
+        assert.ok(content.includes(`height: ${panorama.height}`));
+    }
+});
+
+test("does not generate assets or content for the excluded duplicate", async () => {
+    const [{ forbiddenSlug }] = panos2Batch.excludedSources;
+    const forbiddenUrls = [
+        new URL(`assets/images/${forbiddenSlug}.webp`, repoRoot),
+        new URL(`public/images/full/${forbiddenSlug}.webp`, repoRoot),
+        new URL(`src/content/panoramas/${forbiddenSlug}.md`, repoRoot),
+    ];
+
+    for (const forbiddenUrl of forbiddenUrls) {
+        await assert.rejects(access(forbiddenUrl), { code: "ENOENT" });
     }
 });
