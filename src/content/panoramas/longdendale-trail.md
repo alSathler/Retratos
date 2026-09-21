@@ -1,7 +1,7 @@
 ---
-title: "Longdendale Trail"
+title: "Trilha de Longdendale"
 titleEn: "Longdendale Trail"
-country: "England"
+country: "Inglaterra"
 countryEn: "England"
 date: "2026-07-19"
 latitude: 53.481628

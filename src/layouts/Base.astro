@@ -101,6 +101,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
                     image.alt = image.dataset[language === "en" ? "en" : "pt"] || "";
                 });
                 languageToggle?.setAttribute("aria-pressed", String(language === "en"));
+                window.dispatchEvent(new CustomEvent("diario-language-change", { detail: { language } }));
                 try {
                     localStorage.setItem("diario-do-explorador:language", language);
                 } catch (e) {

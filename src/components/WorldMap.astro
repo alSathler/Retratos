@@ -41,6 +41,7 @@ const basePlaces = await Promise.all(
             my: d.date.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
             thumb: thumb.src,
             alt: d.alt,
+            altEn: d.altEn ?? d.alt,
             url: `${base}/${p.id}.html`,
         };
     })
@@ -72,8 +73,8 @@ const pad = (n: number) => String(n).padStart(2, "0");
                     <button class="row" type="button" data-slug={p.slug}>
                         <span class="row__n">{pad(p.idx)}</span>
                         <span>
-                            <span class="row__t">{p.title}</span>
-                            <span class="row__c">{p.country}</span>
+                            <span class="row__t" data-language-value data-pt={p.title} data-en={p.titleEn}>{p.title}</span>
+                            <span class="row__c" data-language-value data-pt={p.country} data-en={p.countryEn}>{p.country}</span>
                         </span>
                     </button>
                 ))
@@ -85,7 +86,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
         <div class="controls">
             <select class="place-picker" id="place-picker" aria-label="Escolher foto">
                 <option value="" data-language-value data-pt="escolha uma foto" data-en="choose a photograph">escolha uma foto</option>
-                {places.map((p) => <option value={p.slug}>{p.title}</option>)}
+                {places.map((p) => <option value={p.slug} data-language-value data-pt={p.title} data-en={p.titleEn}>{p.title}</option>)}
             </select>
             <button class="ctl" id="world-btn" type="button" hidden>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"></path></svg>
@@ -125,7 +126,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
                 <g class="labels">
                     {
                         places.map((p) => (
-                            <text class="lbl" data-slug={p.slug} x={p.x} y={p.y} font-size="11" dx="8" dy="4" stroke-width="3">
+                            <text class="lbl" data-slug={p.slug} data-language-value data-pt={p.title} data-en={p.titleEn} x={p.x} y={p.y} font-size="11" dx="8" dy="4" stroke-width="3">
                                 {p.title}
                             </text>
                         ))
@@ -658,6 +659,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
         function focusPlace(slug) {
             const p = place[slug];
+            const english = document.documentElement.getAttribute("data-language") === "en";
             active = slug;
             for (const s in pinEl) {
                 pinEl[s].classList.toggle("active", s === slug);
@@ -672,10 +674,10 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
             const img = q("c-img");
             img.src = p.thumb;
-            img.alt = p.alt;
-            q("c-country").textContent = p.country;
+            img.alt = english ? p.altEn : p.alt;
+            q("c-country").textContent = english ? p.countryEn : p.country;
             q("c-idx").textContent = String(p.idx).padStart(2, "0") + " / " + total;
-            q("c-title").textContent = p.title;
+            q("c-title").textContent = english ? p.titleEn : p.title;
             q("c-lat").textContent = fmtLat(p.lat);
             q("c-lon").textContent = fmtLon(p.lon);
             q("c-date").textContent = p.my;
@@ -692,6 +694,10 @@ const pad = (n: number) => String(n).padStart(2, "0");
                 /* history unavailable */
             }
         }
+
+        window.addEventListener("diario-language-change", () => {
+            if (active) focusPlace(active);
+        });
 
         function focusPin(slug) {
             const cluster = place[slug].cluster;
