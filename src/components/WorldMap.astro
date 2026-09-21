@@ -266,10 +266,14 @@ const pad = (n: number) => String(n).padStart(2, "0");
         width: 100%;
         height: 100%;
         display: block;
+        touch-action: none;
     }
     #world {
         transition: transform 950ms cubic-bezier(0.16, 1, 0.3, 1);
         will-change: transform;
+    }
+    #world.dragging {
+        transition: none;
     }
     /* land paths are injected via set:html, so they need a :global reach */
     :global(.atlas-map .land path) {
@@ -613,6 +617,14 @@ const pad = (n: number) => String(n).padStart(2, "0");
             rowEl[p.slug] = root.querySelector('.row[data-slug="' + p.slug + '"]');
         });
         let active = null;
+        let viewX = CX;
+        let viewY = CY;
+        let zoom = 1;
+        const MIN_ZOOM = 1;
+        const MAX_ZOOM = 20;
+        const pointers = new Map();
+        let gesture = null;
+        let ignoreClick = false;
 
         const fmtLat = (v) => Math.abs(v).toFixed(4) + "° " + (v >= 0 ? "N" : "S");
         const fmtLon = (v) => Math.abs(v).toFixed(4) + "° " + (v >= 0 ? "E" : "W");
@@ -643,11 +655,35 @@ const pad = (n: number) => String(n).padStart(2, "0");
         }
 
         function setTransform(px, py, k) {
+            viewX = px;
+            viewY = py;
+            zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, k));
             world.setAttribute(
                 "transform",
-                "translate(" + CX + " " + CY + ") scale(" + k + ") translate(" + -px + " " + -py + ")"
+                "translate(" + CX + " " + CY + ") scale(" + zoom + ") translate(" + -viewX + " " + -viewY + ")"
             );
-            sizePins(k);
+            sizePins(zoom);
+        }
+
+        function mapPoint(clientX, clientY) {
+            const matrix = svg.getScreenCTM();
+            if (!matrix) return null;
+            const point = svg.createSVGPoint();
+            point.x = clientX;
+            point.y = clientY;
+            return point.matrixTransform(matrix.inverse());
+        }
+
+        function zoomAt(point, factor) {
+            const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
+            if (nextZoom === zoom) return;
+            const sourceX = viewX + (point.x - CX) / zoom;
+            const sourceY = viewY + (point.y - CY) / zoom;
+            setTransform(
+                sourceX - (point.x - CX) / nextZoom,
+                sourceY - (point.y - CY) / nextZoom,
+                nextZoom
+            );
         }
 
         function hover(slug, on) {
@@ -761,7 +797,58 @@ const pad = (n: number) => String(n).padStart(2, "0");
         canvas.addEventListener("pointerleave", () => {
             readout.innerHTML = "<b> — </b>";
         });
+        svg.addEventListener("wheel", (e) => {
+            const point = mapPoint(e.clientX, e.clientY);
+            if (!point) return;
+            e.preventDefault();
+            zoomAt(point, Math.exp(-e.deltaY * 0.002));
+        }, { passive: false });
+
+        svg.addEventListener("pointerdown", (e) => {
+            if (!mapPoint(e.clientX, e.clientY)) return;
+            pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            try { svg.setPointerCapture(e.pointerId); } catch (_) { /* unsupported */ }
+            world.classList.add("dragging");
+            gesture = { startX: e.clientX, startY: e.clientY, viewX, viewY, moved: false, distance: null };
+        });
+        svg.addEventListener("pointermove", (e) => {
+            if (!pointers.has(e.pointerId) || !gesture) return;
+            pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            const points = Array.from(pointers.values());
+            if (points.length >= 2) {
+                const a = points[0];
+                const b = points[1];
+                const point = mapPoint((a.x + b.x) / 2, (a.y + b.y) / 2);
+                const distance = Math.hypot(a.x - b.x, a.y - b.y);
+                if (point && gesture.distance) zoomAt(point, distance / gesture.distance);
+                gesture.distance = distance;
+                gesture.moved = true;
+                return;
+            }
+            const dx = e.clientX - gesture.startX;
+            const dy = e.clientY - gesture.startY;
+            if (Math.hypot(dx, dy) > 3) gesture.moved = true;
+            if (gesture.moved) setTransform(gesture.viewX - dx / zoom, gesture.viewY - dy / zoom, zoom);
+        });
+        function endGesture(e) {
+            if (!pointers.has(e.pointerId)) return;
+            if (gesture && gesture.moved) {
+                ignoreClick = true;
+                setTimeout(() => { ignoreClick = false; }, 0);
+            }
+            pointers.delete(e.pointerId);
+            if (pointers.size < 2 && pointers.size) {
+                const remaining = Array.from(pointers.values())[0];
+                gesture = { startX: remaining.x, startY: remaining.y, viewX, viewY, moved: true, distance: null };
+            } else if (!pointers.size) {
+                gesture = null;
+                world.classList.remove("dragging");
+            }
+        }
+        svg.addEventListener("pointerup", endGesture);
+        svg.addEventListener("pointercancel", endGesture);
         svg.addEventListener("click", (e) => {
+            if (ignoreClick) return;
             if (e.target === svg || e.target.tagName === "path") reset();
         });
         worldBtn.addEventListener("click", reset);
