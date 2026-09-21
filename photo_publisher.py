@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import sys
 import threading
 import tkinter as tk
 import urllib.parse
@@ -24,7 +25,9 @@ except ImportError:  # JPEG/PNG/WebP remain usable when HEIC support is not inst
     register_heif_opener = None
 
 
-ROOT = Path(__file__).resolve().parent
+# The packaged app lives beside the project files; during normal Python use,
+# the source file itself occupies that same location.
+ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
 ASSET_DIR = ROOT / "assets" / "images"
 CONTENT_DIR = ROOT / "src" / "content" / "panoramas"
 FULL_DIR = ROOT / "public" / "images" / "full"
