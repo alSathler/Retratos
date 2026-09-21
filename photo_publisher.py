@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import threading
 import tkinter as tk
 import urllib.parse
@@ -84,9 +85,10 @@ class Publisher(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Adicionar foto ao diário do explorador")
-        self.minsize(790, 680)
+        self.minsize(790, 820)
         self.source: Path | None = None
         self.preview_image = None
+        self.last_entry_paths: list[Path] = []
         self.vars = {name: tk.StringVar() for name in ("title", "title_en", "slug", "date", "country", "country_en", "latitude", "longitude", "alt", "alt_en")}
         self.include_full = tk.BooleanVar(value=False)
         self.status = tk.StringVar(value="Escolha uma foto para começar.")
@@ -121,7 +123,11 @@ class Publisher(tk.Tk):
         self.comment_en = tk.Text(form, height=7, width=42, wrap="word")
         self.comment_en.grid(row=len(fields) + 2, column=1, sticky="nsew", pady=4)
         ttk.Checkbutton(form, text="Criar também arquivo WebP de resolução total", variable=self.include_full).grid(row=len(fields) + 3, column=1, sticky="w", pady=8)
-        ttk.Button(form, text="Publicar no projeto", command=self.publish).grid(row=len(fields) + 4, column=1, sticky="e", pady=(8, 0))
+        actions = ttk.Frame(form)
+        actions.grid(row=len(fields) + 4, column=1, sticky="e", pady=(8, 0))
+        self.github_button = ttk.Button(actions, text="Publicar no GitHub", command=self.publish_to_github, state="disabled")
+        self.github_button.grid(row=0, column=0, padx=(0, 8))
+        ttk.Button(actions, text="Preparar no projeto", command=self.publish).grid(row=0, column=1)
         ttk.Label(outer, textvariable=self.status, wraplength=730).grid(row=2, column=0, columnspan=2, sticky="w", pady=(15, 0))
 
     def choose(self):
@@ -228,8 +234,49 @@ class Publisher(tk.Tk):
         if comment:
             markdown += f"\n{comment}\n"
         entry_path.write_text(markdown, encoding="utf-8")
+        self.last_entry_paths = [image_path, entry_path]
+        if self.include_full.get():
+            self.last_entry_paths.append(full_path)
+        self.github_button.state(["!disabled"])
         self.status.set(f"Pronto: {entry_path.relative_to(ROOT)} e {image_path.relative_to(ROOT)}")
-        messagebox.showinfo("Foto adicionada", "Os arquivos foram criados. Rode npm run dev para ver a entrada no site.")
+        messagebox.showinfo("Foto adicionada", "Os arquivos foram criados. Clique em ‘Publicar no GitHub’ para enviar o diário ao site.")
+
+    def publish_to_github(self):
+        if not self.last_entry_paths:
+            messagebox.showwarning("Nenhuma entrada nova", "Primeiro prepare uma foto neste programa. Depois ela poderá ser enviada ao GitHub.")
+            return
+        self.github_button.state(["disabled"])
+        self.status.set("Enviando a entrada ao GitHub…")
+        threading.Thread(target=self._git_publish, daemon=True).start()
+
+    def _git_publish(self):
+        safe_root = f"safe.directory={ROOT.as_posix()}"
+        base = ["git", "-c", safe_root]
+        relative_paths = [str(path.relative_to(ROOT)) for path in self.last_entry_paths]
+        title = self.vars["title"].get().strip() or "nova entrada"
+        try:
+            subprocess.run(base + ["add", "--", *relative_paths], cwd=ROOT, check=True, capture_output=True, text=True)
+            staged = subprocess.run(base + ["diff", "--cached", "--quiet"], cwd=ROOT, capture_output=True, text=True)
+            if staged.returncode == 0:
+                raise RuntimeError("Não há arquivos novos para enviar.")
+            if staged.returncode != 1:
+                raise RuntimeError(staged.stderr.strip() or "Não foi possível conferir os arquivos preparados.")
+            subprocess.run(base + ["commit", "-m", f"Adiciona {title}"], cwd=ROOT, check=True, capture_output=True, text=True)
+            subprocess.run(base + ["push"], cwd=ROOT, check=True, capture_output=True, text=True)
+        except (OSError, subprocess.CalledProcessError, RuntimeError) as error:
+            details = error.stderr.strip() if isinstance(error, subprocess.CalledProcessError) else str(error)
+            self.after(0, lambda: self._git_finished(False, details))
+            return
+        self.after(0, lambda: self._git_finished(True, ""))
+
+    def _git_finished(self, success: bool, details: str):
+        self.github_button.state(["!disabled"])
+        if success:
+            self.status.set("Enviado ao GitHub. O Pages atualizará em alguns minutos.")
+            messagebox.showinfo("Publicado", "A entrada foi enviada ao GitHub. O site será atualizado automaticamente em alguns minutos.")
+        else:
+            self.status.set("Não foi possível enviar ao GitHub.")
+            messagebox.showerror("Falha ao publicar no GitHub", details or "Confira sua conexão e autenticação do GitHub.")
 
 
 if __name__ == "__main__":
