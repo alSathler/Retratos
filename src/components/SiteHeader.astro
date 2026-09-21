@@ -1,11 +1,12 @@
 ---
 import { getCollection } from "astro:content";
 import ThemeToggle from "./ThemeToggle.astro";
+import LanguageToggle from "./LanguageToggle.astro";
 
 const panoramas = await getCollection("panoramas");
 const count = panoramas.length;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const home = `${base}/` || "/";
+const home = base || "/";
 const mapUrl = `${base}/map`;
 const pathname = Astro.url.pathname.replace(/\/$/, "");
 const onMap = pathname === mapUrl || pathname === `${mapUrl}.html`;
@@ -14,11 +15,11 @@ const onMap = pathname === mapUrl || pathname === `${mapUrl}.html`;
 <header class="site-header">
     <div class="shell site-header__inner">
         <a class="site-brand" href={home} rel="author">
-            panoramas<sup class="site-brand__edition"><span class="site-brand__edition-long">field log</span><span class="site-brand__edition-short">log</span> · {count}</sup>
+            <span data-language-value data-pt="diário do explorador" data-en="explorer's journal">diário do explorador</span><sup class="site-brand__edition"><span class="site-brand__edition-long" data-language-value data-pt="entradas" data-en="entries">entradas</span><span class="site-brand__edition-short" data-language-value data-pt="entradas" data-en="entries">entradas</span> · {count}</sup>
         </a>
         <nav class="site-nav">
             <a href={mapUrl} aria-current={onMap ? "page" : undefined}>atlas</a>
-            <a href="https://github.com/4gray/panoramas" rel="me">github</a>
+            <LanguageToggle />
             <ThemeToggle />
         </nav>
     </div>

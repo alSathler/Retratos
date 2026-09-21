@@ -1,15 +1,17 @@
 ---
 import { getCollection } from "astro:content";
 import { getImage } from "astro:assets";
-// Raw country silhouettes injected below with set:html. See src/assets/world-land.svg.
-import worldLand from "../assets/world-land.svg?raw";
+// Raw country silhouettes injected below with set:html.
+import worldLand from "../assets/world-land-geographic.svg?raw";
 
-// Linear (equirectangular) map from geographic degrees to the world-land SVG
-// coordinate space. Least-squares fit against the mean-of-points centroids of
-// ~44 countries (Europe-weighted, where our frames cluster). Verified: 18/19
-// frames land inside their country's outline.
-const PROJ = { ax: 2.36589, bx: 402.9028, ay: -2.7875, by: 534.668 };
 const VIEW = { minx: 30.767, miny: 241.591, w: 784.077, h: 458.627 };
+// Linear map from geographic degrees to the SVG's own plate-carrée geometry.
+const PROJ = {
+  ax: VIEW.w / 360,
+  bx: VIEW.minx + VIEW.w / 2,
+  ay: -VIEW.h / 180,
+  by: VIEW.miny + VIEW.h / 2,
+};
 const CX = VIEW.minx + VIEW.w / 2;
 const CY = VIEW.miny + VIEW.h / 2;
 
@@ -29,7 +31,9 @@ const basePlaces = await Promise.all(
             slug: p.id,
             idx: i + 1,
             title: d.title,
+            titleEn: d.titleEn ?? d.title,
             country: d.country.replace(/-/g, " "),
+            countryEn: (d.countryEn ?? d.country).replace(/-/g, " "),
             lat,
             lon,
             x: +(PROJ.ax * lon + PROJ.bx).toFixed(2),
@@ -59,8 +63,8 @@ const pad = (n: number) => String(n).padStart(2, "0");
 <section class="atlas-map" id="map-app">
     <aside class="logbook">
         <div class="logbook__head">
-            <div class="logbook__eyebrow">logbook</div>
-            <div class="logbook__count"><em>{total}</em> places, one horizon each</div>
+            <div class="logbook__eyebrow" data-language-value data-pt="explorador" data-en="explorer">explorador</div>
+            <div class="logbook__count"><em>{total}</em> <span data-language-value data-pt="lugares, um horizonte cada" data-en="places, one horizon each">lugares, um horizonte cada</span></div>
         </div>
         <div class="logbook__list">
             {
@@ -79,13 +83,13 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
     <div class="canvas" id="canvas">
         <div class="controls">
-            <select class="place-picker" id="place-picker" aria-label="Choose panorama">
-                <option value="">choose a panorama</option>
+            <select class="place-picker" id="place-picker" aria-label="Escolher foto">
+                <option value="" data-language-value data-pt="escolha uma foto" data-en="choose a photograph">escolha uma foto</option>
                 {places.map((p) => <option value={p.slug}>{p.title}</option>)}
             </select>
             <button class="ctl" id="world-btn" type="button" hidden>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"></path></svg>
-                World
+                <span data-language-value data-pt="mundo" data-en="world">mundo</span>
             </button>
         </div>
         <div class="readout" id="readout" aria-hidden="true"><b>&#8202;&mdash;&#8202;</b></div>
@@ -131,19 +135,21 @@ const pad = (n: number) => String(n).padStart(2, "0");
         </svg>
 
         <article class="card" id="card" aria-live="polite">
-            <div class="card__frame"><img id="c-img" alt="" decoding="async" /></div>
+            <a class="card__frame" id="c-image-link" href="#" aria-label="Abrir fotografia">
+                <img id="c-img" alt="" decoding="async" />
+            </a>
             <div class="card__kicker"><span id="c-country">&mdash;</span><span class="card__idx" id="c-idx">{`00 / ${total}`}</span></div>
             <h2 class="card__title" id="c-title">&mdash;</h2>
             <div class="card__coords"><span class="deg" id="c-lat">&mdash;</span><span id="c-lon">&mdash;</span></div>
             <div class="card__foot">
                 <span class="card__date" id="c-date">&mdash;</span>
-                <a class="card__view" id="c-view" href="#">view frame
+                <a class="card__view" id="c-view" href="#"><span data-language-value data-pt="abrir foto" data-en="view frame">abrir foto</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
                 </a>
             </div>
         </article>
 
-        <p class="hint">click a pin or a logbook entry to fly in &middot; esc to zoom out</p>
+        <p class="hint" data-language-value data-pt="toque num ponto ou entrada para aproximar · esc para afastar" data-en="click a pin or a logbook entry to fly in · esc to zoom out">toque num ponto ou entrada para aproximar · esc para afastar</p>
     </div>
 </section>
 
@@ -461,12 +467,22 @@ const pad = (n: number) => String(n).padStart(2, "0");
         pointer-events: auto;
     }
     .card__frame {
-        height: 84px;
+        display: block;
+        width: auto;
+        height: clamp(82px, calc(100dvh - 320px), 150px);
+        aspect-ratio: 3 / 4;
+        margin-inline: auto;
         border-radius: 9px;
         overflow: hidden;
         margin-bottom: 14px;
-        border: 1px solid var(--rule);
+        border: 0;
         background: color-mix(in srgb, var(--ink) 6%, transparent);
+        transition: box-shadow 180ms ease, transform 180ms ease;
+    }
+    .card__frame:hover,
+    .card__frame:focus-visible {
+        box-shadow: 0 0 0 1px var(--accent);
+        transform: translateY(-2px);
     }
     .card__frame img {
         width: 100%;
@@ -664,6 +680,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
             q("c-lon").textContent = fmtLon(p.lon);
             q("c-date").textContent = p.my;
             q("c-view").setAttribute("href", p.url);
+            q("c-image-link").setAttribute("href", p.url);
             placePicker.value = slug;
             card.classList.add("show");
             worldBtn.hidden = false;

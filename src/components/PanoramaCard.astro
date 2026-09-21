@@ -1,6 +1,6 @@
 ---
 import { Image, getImage } from "astro:assets";
-import type { CollectionEntry } from "astro:content";
+import { render, type CollectionEntry } from "astro:content";
 
 interface Props {
     panorama: CollectionEntry<"panoramas">;
@@ -10,6 +10,7 @@ interface Props {
 
 const { panorama, index, total } = Astro.props;
 const { data, id } = panorama;
+const { Content } = await render(panorama);
 const ratio = data.image.width / data.image.height;
 const indexStr = String(index).padStart(2, "0");
 const totalStr = String(total).padStart(2, "0");
@@ -50,8 +51,8 @@ const lqip = await getImage({
     <div class="log-entry__sheet">
         <header class="log-entry__head">
             <div>
-                <p>{data.country.replace(/-/g, " ")}</p>
-                <h2><a href={postUrl}>{data.title}</a></h2>
+                <p><span data-language-value data-pt={data.country.replace(/-/g, " ")} data-en={(data.countryEn ?? data.country).replace(/-/g, " ")}>{data.country.replace(/-/g, " ")}</span></p>
+                <h2><a href={postUrl}><span data-language-value data-pt={data.title} data-en={data.titleEn ?? data.title}>{data.title}</span></a></h2>
             </div>
             <dl>
                 <div><dt>latitude</dt><dd>{data.latitude == null ? "—" : fmtLat(data.latitude)}</dd></div>
@@ -59,32 +60,42 @@ const lqip = await getImage({
             </dl>
         </header>
 
-        <a
-            class="log-entry__frame"
-            href={fullImage.src}
-            data-pswp-width={fullImage.attributes.width ?? data.image.width}
-            data-pswp-height={fullImage.attributes.height ?? data.image.height}
-            data-pswp-src={fullImage.src}
-            data-permalink={postUrl}
-            style={`aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
-            aria-label={`Open ${data.title} in lightbox`}
-        >
-            <Image
-                class="log-entry__img"
-                src={data.image}
-                alt={data.alt}
-                widths={[480, 960, 1440]}
-                sizes="(max-width: 720px) 100vw, (max-width: 1180px) 80vw, 980px"
-                format="webp"
-                loading={index <= 2 ? "eager" : "lazy"}
-                decoding="async"
-            />
-        </a>
+        <div class="log-entry__body">
+            <a
+                class="log-entry__frame"
+                href={fullImage.src}
+                data-pswp-width={fullImage.attributes.width ?? data.image.width}
+                data-pswp-height={fullImage.attributes.height ?? data.image.height}
+                data-pswp-src={fullImage.src}
+                data-permalink={postUrl}
+                style={`aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
+                aria-label={`Open ${data.title} in lightbox`}
+            >
+                <Image
+                    class="log-entry__img"
+                    src={data.image}
+                    alt={data.alt}
+                    data-language-alt
+                    data-pt={data.alt}
+                    data-en={data.altEn ?? data.alt}
+                    widths={[480, 960, 1440]}
+                    sizes="(max-width: 720px) 100vw, (max-width: 1180px) 58vw, 760px"
+                    format="webp"
+                    loading={index <= 2 ? "eager" : "lazy"}
+                    decoding="async"
+                />
+            </a>
+            <section class="log-entry__note" aria-label="Nota pessoal">
+                <p class="log-entry__note-label" data-language-value data-pt="nota" data-en="note">nota</p>
+                <div data-language-content="pt"><Content /></div>
+                <p data-language-content="en">{data.noteEn ?? "Translation not available yet."}</p>
+            </section>
+        </div>
 
         <footer class="log-entry__foot">
             <span>{data.image.width} × {data.image.height} px</span>
-            <span>field note · slow sweep</span>
-            <a href={postUrl}>open field entry →</a>
+            <span data-language-value data-pt="nota de campo · caminhada lenta" data-en="field note · slow walk">nota de campo · caminhada lenta</span>
+            <a href={postUrl} data-language-value data-pt="abrir entrada →" data-en="open entry →">abrir entrada →</a>
         </footer>
     </div>
 </article>

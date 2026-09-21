@@ -6,7 +6,9 @@ const panoramas = defineCollection({
     schema: ({ image }) =>
         z.object({
             title: z.string(),
+            titleEn: z.string().optional(),
             country: z.string(),
+            countryEn: z.string().optional(),
             date: z.coerce.date(),
             latitude: z.number().optional(),
             longitude: z.number().optional(),
@@ -19,6 +21,8 @@ const panoramas = defineCollection({
                 })
                 .optional(),
             alt: z.string(),
+            altEn: z.string().optional(),
+            noteEn: z.string().optional(),
         }),
 });
 

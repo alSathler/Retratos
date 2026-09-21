@@ -210,6 +210,11 @@ button {
     display: none;
 }
 
+[data-language="en"] [data-language-content="pt"],
+[data-language="pt-BR"] [data-language-content="en"] {
+    display: none;
+}
+
 // ── hero (home) ─────────────────────────────────────────────────────────────
 .hero--notebook {
     --notebook-stage: #171817;
@@ -390,6 +395,13 @@ button {
     transform: rotate(-8deg);
 }
 
+.hero__cover-actions .language-toggle {
+    position: relative;
+    z-index: 4;
+    flex: 0 0 auto;
+    color: #33271c;
+}
+
 .hero__cover-atlas:focus-visible,
 .hero__cover-actions .theme-toggle:focus-visible {
     outline: 2px solid #672b1b;
@@ -527,7 +539,8 @@ button {
 
 // ── gallery ─────────────────────────────────────────────────────────────────
 .gallery {
-    padding: 0 0 clamp(80px, 10vw, 140px);
+    /* Keep the site gutter: this class is used alongside .shell. */
+    padding: 0 var(--gutter) clamp(80px, 10vw, 140px);
 }
 
 .log-entry {
@@ -650,6 +663,96 @@ button {
     will-change: transform;
 }
 
+.language-toggle {
+    height: 30px;
+    padding: 0 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 0;
+    border-radius: 999px;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    transition: color 180ms ease;
+}
+
+.language-toggle:hover {
+    color: var(--ink);
+}
+
+.language-toggle__code {
+    min-width: 16px;
+    text-align: center;
+}
+
+.language-toggle__track {
+    position: relative;
+    width: 32px;
+    height: 18px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    opacity: 0.82;
+}
+
+.language-toggle__track i {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: currentColor;
+    transition: transform 180ms ease;
+}
+
+[data-language="en"] .language-toggle__track i {
+    transform: translateX(14px);
+}
+
+.log-entry__body {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(210px, 0.8fr);
+    gap: clamp(22px, 3vw, 44px);
+    align-items: start;
+}
+
+.log-entry__note,
+.post__note {
+    color: var(--ink-soft);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.log-entry__note {
+    border-left: 1px solid var(--margin-rule);
+    padding-left: clamp(18px, 2vw, 30px);
+}
+
+.log-entry__note-label,
+.post__note-label {
+    margin: 0 0 12px;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.log-entry__note :global(p),
+.post__note :global(p) {
+    margin: 0 0 1em;
+}
+
+.post__note {
+    margin: 0 0 28px;
+    padding: 20px 0 4px;
+    border-top: 1px solid var(--rule);
+}
+
 .log-entry__frame:hover {
     transform: translateY(-2px);
     color: inherit;
@@ -720,8 +823,12 @@ button {
 }
 
 @media (max-width: 720px) {
+    :root {
+        --gutter: 20px;
+        --wide-gutter: 20px;
+    }
     .hero__notebook {
-        width: calc(100% - 24px);
+        width: calc(100% - 40px);
         aspect-ratio: 4 / 5;
     }
     .hero__notebook-art {
@@ -756,7 +863,8 @@ button {
         font-size: 6px;
     }
     .hero__cover-actions {
-        top: 7.5%;
+        /* Keeps the controls below the notebook's spiral binding. */
+        top: 12.5%;
         right: 8%;
         gap: 9px;
     }
@@ -768,7 +876,7 @@ button {
         width: 22px;
         height: 22px;
     }
-    .hero__cover-actions .theme-toggle {
+.hero__cover-actions .theme-toggle {
         width: 32px;
         height: 32px;
         border-color: rgba(90, 38, 24, 0.54);
@@ -778,6 +886,11 @@ button {
     .hero__cover-actions .theme-toggle:hover {
         border-color: rgba(90, 38, 24, 0.8);
         color: #fff0d5;
+    }
+    .hero__cover-actions .language-toggle {
+        flex: 0 0 auto;
+        height: 32px;
+        color: #6f321f;
     }
     .hero__cover-label {
         top: 67%;
@@ -847,6 +960,14 @@ button {
     }
     .log-entry__head dl {
         max-width: 18rem;
+    }
+    .log-entry__body {
+        grid-template-columns: 1fr;
+    }
+    .log-entry__note {
+        border-top: 1px solid var(--margin-rule);
+        border-left: 0;
+        padding: 18px 0 0;
     }
     .log-entry__foot {
         grid-template-columns: 1fr auto;
@@ -940,6 +1061,20 @@ button {
     width: 100%;
     height: auto;
     display: block;
+}
+
+.hero__cover-actions .language-toggle {
+    border-color: rgba(47, 35, 24, 0.58);
+    color: #33271c;
+}
+
+// Portrait photographs should remain legible without taking over the first
+// screen. The page supplies a ratio-aware width for each individual frame.
+@media (min-width: 861px) {
+    .post__frame {
+        width: min(100%, var(--frame-width));
+        margin-inline: auto;
+    }
 }
 
 .post__open {
@@ -1150,8 +1285,12 @@ button {
         gap: 30px;
         padding-inline: 0;
     }
+    .post__media {
+        margin-inline: 20px;
+        padding-inline: 0;
+    }
     .post__field-note {
-        margin-inline: var(--gutter);
+        margin-inline: 20px;
         border-left: 0;
         border-top: 1px solid var(--margin-rule);
         padding: 24px 0 0;
@@ -1219,6 +1358,12 @@ button {
     .hero__cover-atlas,
     .hero__cover-actions .theme-toggle {
         transition: none;
+    }
+    .hero__cover-actions .language-toggle {
+        height: 32px;
+        padding-inline: 2px;
+        background: transparent;
+        color: #6f321f;
     }
 
     .hero__cover-atlas:hover,

@@ -2,9 +2,12 @@ import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 
 export default defineConfig({
-    site: "https://4gray.github.io",
-    base: "/panoramas",
+    site: "https://alsathler.github.io",
+    base: "/Retratos",
     trailingSlash: "never",
+    devToolbar: {
+        enabled: false,
+    },
     build: {
         format: "file",
     },
@@ -13,6 +16,11 @@ export default defineConfig({
         responsiveStyles: true,
     },
     vite: {
+        server: {
+            watch: {
+                ignored: ["**/.atlas-browser-check/**", "**/.atlas-browser-check2/**"],
+            },
+        },
         css: {
             preprocessorOptions: {
                 scss: {

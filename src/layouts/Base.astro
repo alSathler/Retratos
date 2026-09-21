@@ -10,16 +10,16 @@ interface Props {
 }
 
 const { title, description, showHeader = true } = Astro.props;
-const siteTitle = "panoramas.";
+const siteTitle = "diário do explorador.";
 const fullTitle = title ? `${title} — ${siteTitle}` : siteTitle;
 const desc =
     description ??
-    "A slow travel journal of hand-taken panoramas — wide horizons gathered one slow sweep at a time.";
+    "Um diário visual de lugares, caminhadas e pequenos encontros de um explorador.";
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -30,7 +30,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
         <script is:inline>
             (function () {
                 try {
-                    var stored = localStorage.getItem("panoramas:theme");
+                    var stored = localStorage.getItem("diario-do-explorador:theme");
                     var prefersDark = window.matchMedia(
                         "(prefers-color-scheme: dark)"
                     ).matches;
@@ -38,6 +38,13 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
                     document.documentElement.setAttribute("data-theme", theme);
                 } catch (e) {
                     document.documentElement.setAttribute("data-theme", "light");
+                }
+                try {
+                    var language = localStorage.getItem("diario-do-explorador:language") || "pt-BR";
+                    document.documentElement.setAttribute("data-language", language);
+                    document.documentElement.lang = language;
+                } catch (e) {
+                    document.documentElement.setAttribute("data-language", "pt-BR");
                 }
             })();
         </script>
@@ -76,10 +83,33 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
                 const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
                 root.setAttribute("data-theme", next);
                 try {
-                    localStorage.setItem("panoramas:theme", next);
+                    localStorage.setItem("diario-do-explorador:theme", next);
                 } catch (e) {
                     /* storage unavailable */
                 }
+            });
+
+            const languageToggle = document.querySelector<HTMLButtonElement>("[data-language-toggle]");
+            const setLanguage = (language: "pt-BR" | "en") => {
+                root.setAttribute("data-language", language);
+                root.lang = language;
+                document.querySelectorAll<HTMLElement>("[data-language-value]").forEach((el) => {
+                    const value = el.dataset[language === "en" ? "en" : "pt"];
+                    if (value) el.textContent = value;
+                });
+                document.querySelectorAll<HTMLImageElement>("[data-language-alt]").forEach((image) => {
+                    image.alt = image.dataset[language === "en" ? "en" : "pt"] || "";
+                });
+                languageToggle?.setAttribute("aria-pressed", String(language === "en"));
+                try {
+                    localStorage.setItem("diario-do-explorador:language", language);
+                } catch (e) {
+                    /* storage unavailable */
+                }
+            };
+            setLanguage(root.getAttribute("data-language") === "en" ? "en" : "pt-BR");
+            languageToggle?.addEventListener("click", () => {
+                setLanguage(root.getAttribute("data-language") === "en" ? "pt-BR" : "en");
             });
         </script>
     </body>

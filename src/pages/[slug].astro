@@ -1,6 +1,6 @@
 ---
 import { Image, getImage } from "astro:assets";
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection, render, type CollectionEntry } from "astro:content";
 import Base from "../layouts/Base.astro";
 
 export async function getStaticPaths() {
@@ -30,9 +30,10 @@ interface Props {
 
 const { panorama, prev, next, index, total } = Astro.props;
 const { data } = panorama;
+const { Content } = await render(panorama);
 const ratio = data.image.width / data.image.height;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const home = `${base}/`;
+const home = base || "/";
 const urlFor = (entry: CollectionEntry<"panoramas">) => `${base}/${entry.id}.html`;
 
 const monthYear = data.date.toLocaleDateString("en-US", {
@@ -64,13 +65,13 @@ const lqip = await getImage({
 <Base title={data.title} description={`${data.title} — ${data.country}, ${monthYear}.`}>
     <main class="post post--logbook">
         <div class="post__topline shell-wide">
-            <a class="post__back" href={home}>← field log</a>
-            <span aria-label={`Entry ${index} of ${total}`}>entry {indexStr} / {totalStr}</span>
+            <a class="post__back" href={home}><span data-language-value data-pt="← diário" data-en="← logbook">← diário</span></a>
+            <span aria-label={`Entry ${index} of ${total}`}><span data-language-value data-pt="entrada" data-en="entry">entrada</span> {indexStr} / {totalStr}</span>
             <time datetime={data.date.toISOString()}>{monthYear}</time>
         </div>
 
         <header class="post__entry-heading shell-wide">
-            <h1 class="post__title">{data.title}</h1>
+            <h1 class="post__title" data-language-value data-pt={data.title} data-en={data.titleEn ?? data.title}>{data.title}</h1>
         </header>
 
         <div class="post__spread shell-wide">
@@ -81,34 +82,42 @@ const lqip = await getImage({
                     data-pswp-width={fullImage.attributes.width ?? data.image.width}
                     data-pswp-height={fullImage.attributes.height ?? data.image.height}
                     data-pswp-src={fullImage.src}
-                    style={`aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
+                    style={`--frame-width: ${(ratio * 62).toFixed(3)}dvh; aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
                     aria-label={`Open ${data.title} in lightbox`}
                 >
                     <Image
                         src={data.image}
-                        alt={data.alt}
+                    alt={data.alt}
+                    data-language-alt
+                    data-pt={data.alt}
+                    data-en={data.altEn ?? data.alt}
                         widths={[960, 1440, 1920]}
                         sizes="(max-width: 860px) 100vw, (max-width: 1440px) 72vw, 1180px"
                         format="webp"
                         loading="eager"
                         decoding="async"
                     />
-                    <span class="post__open">open frame ↗</span>
+                    <span class="post__open" data-language-value data-pt="abrir foto ↗" data-en="open frame ↗">abrir foto ↗</span>
                 </a>
             </div>
 
             <aside class="post__field-note">
-                <div class="post__field-number"><span>field entry</span><strong>{indexStr}</strong></div>
-                <p class="post__place">{data.country.replace(/-/g, " ")}</p>
+                <div class="post__field-number"><span data-language-value data-pt="entrada" data-en="field entry">entrada</span><strong>{indexStr}</strong></div>
+                <p class="post__place" data-language-value data-pt={data.country.replace(/-/g, " ")} data-en={(data.countryEn ?? data.country).replace(/-/g, " ")}>{data.country.replace(/-/g, " ")}</p>
+                <section class="post__note" aria-label="Nota pessoal">
+                    <p class="post__note-label" data-language-value data-pt="nota" data-en="note">nota</p>
+                    <div data-language-content="pt"><Content /></div>
+                    <p data-language-content="en">{data.noteEn ?? "Translation not available yet."}</p>
+                </section>
                 <dl>
-                    <div><dt>recorded</dt><dd>{monthYear}</dd></div>
+                    <div><dt data-language-value data-pt="registrado" data-en="recorded">registrado</dt><dd>{monthYear}</dd></div>
                     <div><dt>latitude</dt><dd>{data.latitude == null ? "—" : fmtLat(data.latitude)}</dd></div>
                     <div><dt>longitude</dt><dd>{data.longitude == null ? "—" : fmtLon(data.longitude)}</dd></div>
                     <div><dt>frame</dt><dd>{data.image.width} × {data.image.height}</dd></div>
                     {
                         data.full && fullImageUrl && (
                             <div>
-                                <dt>full resolution</dt>
+                                <dt data-language-value data-pt="resolução total" data-en="full resolution">resolução total</dt>
                                 <dd>
                                     <a class="post__full-link" href={fullImageUrl} target="_blank" rel="noopener">
                                         {data.full.width} × {data.full.height} px ↗
@@ -117,7 +126,7 @@ const lqip = await getImage({
                             </div>
                         )
                     }
-                    <div><dt>method</dt><dd>slow sweep</dd></div>
+                    <div><dt data-language-value data-pt="método" data-en="method">método</dt><dd data-language-value data-pt="caminhada lenta" data-en="slow walk">caminhada lenta</dd></div>
                 </dl>
                 {
                     data.latitude != null && data.longitude != null && (
@@ -126,11 +135,11 @@ const lqip = await getImage({
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                                 <circle cx="12" cy="10" r="3" />
                             </svg>
-                            locate in atlas
+                            <span data-language-value data-pt="ver no atlas" data-en="locate in atlas">ver no atlas</span>
                         </a>
                     )
                 }
-                <p class="post__field-signoff">one place, one horizon.</p>
+                <p class="post__field-signoff" data-language-value data-pt="um lugar, um horizonte." data-en="one place, one horizon.">um lugar, um horizonte.</p>
             </aside>
         </div>
 
