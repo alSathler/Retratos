@@ -3,7 +3,7 @@ title: "Castelo de Beja"
 titleEn: "Beja Castle"
 country: "Portugal"
 countryEn: "Portugal"
-date: "2023-04-19"
+date: "2023-03-19"
 latitude: 38.0175
 longitude: -7.8655
 image: ../../../assets/images/castelo-de-beja.webp
