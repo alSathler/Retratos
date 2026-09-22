@@ -58,6 +58,12 @@ const places = basePlaces.map((place) => ({
         .map((candidate) => candidate.slug),
 }));
 const total = places.length;
+const countryAliases: Record<string, string> = {
+    "czech-republic": "czech",
+};
+const countries = new Set(
+    entries.map((entry) => countryAliases[entry.data.country] ?? entry.data.country)
+).size;
 const pad = (n: number) => String(n).padStart(2, "0");
 ---
 
@@ -65,7 +71,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
     <aside class="logbook">
         <div class="logbook__head">
             <div class="logbook__eyebrow" data-language-value data-pt="explorador" data-en="explorer">explorador</div>
-            <div class="logbook__count"><em>{total}</em> <span data-language-value data-pt="lugares, um horizonte cada" data-en="places, one horizon each">lugares, um horizonte cada</span></div>
+            <div class="logbook__count"><span data-language-value data-pt={`${total} lugares, ${countries} países`} data-en={`${total} places, ${countries} countries`}>{total} lugares, {countries} países</span></div>
         </div>
         <div class="logbook__list">
             {
