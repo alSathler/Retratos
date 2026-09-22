@@ -38,7 +38,8 @@ const basePlaces = await Promise.all(
             lon,
             x: +(PROJ.ax * lon + PROJ.bx).toFixed(2),
             y: +(PROJ.ay * lat + PROJ.by).toFixed(2),
-            my: d.date.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+            myPt: d.date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
+            myEn: d.date.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
             thumb: thumb.src,
             alt: d.alt,
             altEn: d.altEn ?? d.alt,
@@ -722,7 +723,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
             q("c-title").textContent = english ? p.titleEn : p.title;
             q("c-lat").textContent = fmtLat(p.lat);
             q("c-lon").textContent = fmtLon(p.lon);
-            q("c-date").textContent = p.my;
+            q("c-date").textContent = english ? p.myEn : p.myPt;
             q("c-view").setAttribute("href", p.url);
             q("c-image-link").setAttribute("href", p.url);
             placePicker.value = slug;

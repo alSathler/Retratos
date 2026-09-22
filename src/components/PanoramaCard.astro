@@ -15,7 +15,11 @@ const ratio = data.image.width / data.image.height;
 const indexStr = String(index).padStart(2, "0");
 const totalStr = String(total).padStart(2, "0");
 
-const monthYear = data.date.toLocaleDateString("en-US", {
+const monthYearPt = data.date.toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+});
+const monthYearEn = data.date.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
 });
@@ -45,7 +49,7 @@ const lqip = await getImage({
         <span>no.</span>
         <strong>{indexStr}</strong>
         <span>/ {totalStr}</span>
-        <time datetime={data.date.toISOString()}>{monthYear}</time>
+        <time datetime={data.date.toISOString()} data-language-value data-pt={monthYearPt} data-en={monthYearEn}>{monthYearPt}</time>
     </aside>
 
     <div class="log-entry__sheet">

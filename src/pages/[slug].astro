@@ -36,7 +36,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const home = base || "/";
 const urlFor = (entry: CollectionEntry<"panoramas">) => `${base}/${entry.id}.html`;
 
-const monthYear = data.date.toLocaleDateString("en-US", {
+const monthYearPt = data.date.toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+});
+const monthYearEn = data.date.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
 });
@@ -62,12 +66,12 @@ const lqip = await getImage({
 });
 ---
 
-<Base title={data.title} description={`${data.title} — ${data.country}, ${monthYear}.`}>
+<Base title={data.title} description={`${data.title} — ${data.country}, ${monthYearPt}.`}>
     <main class="post post--logbook">
         <div class="post__topline shell-wide">
             <a class="post__back" href={home}><span data-language-value data-pt="← diário" data-en="← logbook">← diário</span></a>
             <span aria-label={`Entry ${index} of ${total}`}><span data-language-value data-pt="entrada" data-en="entry">entrada</span> {indexStr} / {totalStr}</span>
-            <time datetime={data.date.toISOString()}>{monthYear}</time>
+            <time datetime={data.date.toISOString()} data-language-value data-pt={monthYearPt} data-en={monthYearEn}>{monthYearPt}</time>
         </div>
 
         <header class="post__entry-heading shell-wide">
@@ -111,7 +115,7 @@ const lqip = await getImage({
                     <p data-language-content="en">{data.noteEn ?? "Translation not available yet."}</p>
                 </section>
                 <dl>
-                    <div><dt data-language-value data-pt="registrado" data-en="recorded">registrado</dt><dd>{monthYear}</dd></div>
+                    <div><dt data-language-value data-pt="registrado" data-en="recorded">registrado</dt><dd data-language-value data-pt={monthYearPt} data-en={monthYearEn}>{monthYearPt}</dd></div>
                     <div><dt>latitude</dt><dd>{data.latitude == null ? "—" : fmtLat(data.latitude)}</dd></div>
                     <div><dt>longitude</dt><dd>{data.longitude == null ? "—" : fmtLon(data.longitude)}</dd></div>
                     <div><dt>frame</dt><dd>{data.image.width} × {data.image.height}</dd></div>
