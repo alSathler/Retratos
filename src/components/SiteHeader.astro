@@ -18,7 +18,7 @@ const onMap = pathname === mapUrl || pathname === `${mapUrl}.html`;
             <span data-language-value data-pt="diário do explorador" data-en="explorer's journal">diário do explorador</span><sup class="site-brand__edition"><span class="site-brand__edition-long" data-language-value data-pt="entradas" data-en="entries">entradas</span><span class="site-brand__edition-short" data-language-value data-pt="entradas" data-en="entries">entradas</span> · {count}</sup>
         </a>
         <nav class="site-nav">
-            <a href={mapUrl} aria-current={onMap ? "page" : undefined}>atlas</a>
+            <a class="site-nav__atlas" href={mapUrl} aria-current={onMap ? "page" : undefined}>atlas <span aria-hidden="true">↗</span></a>
             <LanguageToggle />
             <ThemeToggle />
         </nav>
