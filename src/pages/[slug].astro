@@ -82,7 +82,7 @@ const lqip = await getImage({
                     data-pswp-width={fullImage.attributes.width ?? data.image.width}
                     data-pswp-height={fullImage.attributes.height ?? data.image.height}
                     data-pswp-src={fullImage.src}
-                    style={`--frame-width: ${(ratio * 62).toFixed(3)}dvh; aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
+                    style={`--frame-width: ${(ratio * 70).toFixed(3)}dvh; aspect-ratio: ${ratio.toFixed(3)}; background-image: url('${lqip.src}'); background-size: cover; background-position: center;`}
                     aria-label={`Open ${data.title} in lightbox`}
                 >
                     <Image
