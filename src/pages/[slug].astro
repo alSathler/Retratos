@@ -99,10 +99,7 @@ const lqip = await getImage({
                     />
                     <span class="post__open" data-language-value data-pt="abrir foto ↗" data-en="open frame ↗">abrir foto ↗</span>
                 </a>
-                <p class="post__caption">
-                    <span data-language-value data-pt="descrição" data-en="description">descrição</span>
-                    <span data-language-value data-pt={data.alt} data-en={data.altEn ?? data.alt}>{data.alt}</span>
-                </p>
+                <p class="post__caption" data-language-value data-pt={data.alt} data-en={data.altEn ?? data.alt}>{data.alt}</p>
             </div>
 
             <aside class="post__field-note">
