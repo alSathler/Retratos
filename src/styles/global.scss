@@ -376,28 +376,28 @@ button {
     display: inline-flex;
     align-items: center;
     gap: clamp(5px, 0.65vw, 10px);
-    color: #33271c;
+    min-height: clamp(38px, 3.4vw, 50px);
+    padding: 0 clamp(11px, 1.05vw, 17px);
+    border: 1px solid rgba(70, 27, 17, 0.7);
+    border-radius: 999px;
+    background: #873c27;
+    box-shadow: 0 2px 0 rgba(50, 19, 12, 0.34), inset 0 1px rgba(255, 235, 195, 0.22);
+    color: #ffe7bc;
     font-family: var(--font-display);
     font-size: clamp(20px, 2.1vw, 32px);
     font-style: italic;
     line-height: 1;
-    transition: color 160ms ease, transform 120ms ease;
+    text-shadow: 0 1px rgba(50, 19, 12, 0.3);
+    transition: background 160ms ease, color 160ms ease, transform 120ms ease;
 }
 
 .hero__cover-atlas::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    bottom: -4px;
-    left: 0;
-    height: 1px;
-    background: currentColor;
-    opacity: 0.48;
-    transform: rotate(-1deg);
+    display: none;
 }
 
 .hero__cover-atlas:hover {
-    color: #923c22;
+    background: #a0492d;
+    color: #fff3d7;
 }
 
 .hero__cover-atlas svg {
@@ -904,6 +904,8 @@ button {
     }
     .hero__cover-atlas {
         gap: 5px;
+        min-height: 36px;
+        padding: 0 10px;
         font-size: clamp(19px, 5.8vw, 25px);
     }
     .hero__cover-atlas svg {
