@@ -39,11 +39,6 @@ const mapUrl = `${base}/map`;
         />
 
         <div class="hero__cover-copy">
-            <p class="hero__cover-kicker">
-                <span data-language-value data-pt="diário do explorador" data-en="explorer's journal">diário do explorador</span>
-                <strong>01</strong>
-                <span>{span}</span>
-            </p>
             <h1 class="hero__title"><span data-language-content="pt">diário do<br />explorador</span><span data-language-content="en">explorer's<br />journal</span></h1>
         </div>
 
@@ -70,9 +65,9 @@ const mapUrl = `${base}/map`;
         </nav>
 
         <dl class="hero__cover-label">
-            <div><dt>entries</dt><dd>{total}</dd></div>
-            <div><dt>countries</dt><dd>{countries}</dd></div>
-            <div><dt>recorded</dt><dd>{span}</dd></div>
+            <div><dt data-language-value data-pt="registros" data-en="entries">registros</dt><dd>{total}</dd></div>
+            <div><dt data-language-value data-pt="países" data-en="countries">países</dt><dd>{countries}</dd></div>
+            <div><dt data-language-value data-pt="registrado" data-en="recorded">registrado</dt><dd>{span}</dd></div>
         </dl>
     </div>
 
