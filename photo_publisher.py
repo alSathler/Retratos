@@ -33,6 +33,10 @@ CONTENT_DIR = ROOT / "src" / "content" / "panoramas"
 FULL_DIR = ROOT / "public" / "images" / "full"
 DISPLAY_WIDTH = 2000
 USER_AGENT = "personal-photo-journal/1.0 (local desktop tool)"
+MONTHS_PT = (
+    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+)
 
 if register_heif_opener:
     register_heif_opener()
@@ -93,6 +97,10 @@ class Publisher(tk.Tk):
         self.preview_image = None
         self.last_entry_paths: list[Path] = []
         self.vars = {name: tk.StringVar() for name in ("title", "title_en", "slug", "date", "country", "country_en", "latitude", "longitude", "alt", "alt_en")}
+        self.date_day = tk.StringVar()
+        self.date_month = tk.StringVar()
+        self.date_year = tk.StringVar()
+        self.vars["date"].trace_add("write", self._sync_date_parts_from_iso)
         self.include_full = tk.BooleanVar(value=False)
         self.status = tk.StringVar(value="Escolha uma foto para começar.")
         self._build()
@@ -114,10 +122,13 @@ class Publisher(tk.Tk):
         form = ttk.Frame(outer)
         form.grid(row=1, column=1, sticky="nsew", pady=(16, 0))
         form.columnconfigure(1, weight=1)
-        fields = [("Título (PT-BR)", "title"), ("Título (inglês)", "title_en"), ("Slug / endereço", "slug"), ("Data (AAAA-MM-DD)", "date"), ("País (PT-BR)", "country"), ("País (inglês)", "country_en"), ("Latitude", "latitude"), ("Longitude", "longitude"), ("Descrição da imagem (PT-BR)", "alt"), ("Descrição da imagem (inglês)", "alt_en")]
+        fields = [("Título (PT-BR)", "title"), ("Título (inglês)", "title_en"), ("Slug / endereço", "slug"), ("Data", "date"), ("País (PT-BR)", "country"), ("País (inglês)", "country_en"), ("Latitude", "latitude"), ("Longitude", "longitude"), ("Descrição da imagem (PT-BR)", "alt"), ("Descrição da imagem (inglês)", "alt_en")]
         for row, (label, key) in enumerate(fields):
             ttk.Label(form, text=label).grid(row=row, column=0, sticky="w", pady=4)
-            ttk.Entry(form, textvariable=self.vars[key], width=42).grid(row=row, column=1, sticky="ew", pady=4)
+            if key == "date":
+                self._build_date_input(form, row)
+            else:
+                ttk.Entry(form, textvariable=self.vars[key], width=42).grid(row=row, column=1, sticky="ew", pady=4)
         ttk.Button(form, text="Buscar país/cidade pelo GPS", command=self.reverse_geocode).grid(row=len(fields), column=1, sticky="w", pady=(8, 12))
         ttk.Label(form, text="Comentário").grid(row=len(fields) + 1, column=0, sticky="nw", pady=4)
         self.comment = tk.Text(form, height=9, width=42, wrap="word")
@@ -132,6 +143,60 @@ class Publisher(tk.Tk):
         self.github_button.grid(row=0, column=0, padx=(0, 8))
         ttk.Button(actions, text="Preparar no projeto", command=self.publish).grid(row=0, column=1)
         ttk.Label(outer, textvariable=self.status, wraplength=730).grid(row=2, column=0, columnspan=2, sticky="w", pady=(15, 0))
+
+    def _build_date_input(self, parent, row: int):
+        frame = ttk.Frame(parent)
+        frame.grid(row=row, column=1, sticky="w", pady=4)
+        year_limit = datetime.now().year + 1
+        day = ttk.Spinbox(frame, from_=1, to=31, width=4, textvariable=self.date_day)
+        month = ttk.Combobox(frame, values=MONTHS_PT, width=11, textvariable=self.date_month, state="readonly")
+        year = ttk.Spinbox(frame, from_=1900, to=year_limit, width=6, textvariable=self.date_year)
+        day.grid(row=0, column=0)
+        ttk.Label(frame, text="de").grid(row=0, column=1, padx=4)
+        month.grid(row=0, column=2)
+        ttk.Label(frame, text="de").grid(row=0, column=3, padx=4)
+        year.grid(row=0, column=4)
+        ttk.Button(frame, text="Hoje", command=self._set_today).grid(row=0, column=5, padx=(8, 0))
+        for control in (day, month, year):
+            control.bind("<FocusOut>", self._sync_iso_from_date_parts)
+            control.bind("<Return>", self._sync_iso_from_date_parts)
+        month.bind("<<ComboboxSelected>>", self._sync_iso_from_date_parts)
+
+    def _set_today(self):
+        today = datetime.now().date()
+        self.vars["date"].set(today.isoformat())
+
+    def _sync_date_parts_from_iso(self, *_):
+        value = self.vars["date"].get().strip()
+        try:
+            date = datetime.strptime(value, "%Y-%m-%d").date()
+        except ValueError:
+            return
+        self.date_day.set(str(date.day))
+        self.date_month.set(MONTHS_PT[date.month - 1])
+        self.date_year.set(str(date.year))
+
+    def _sync_iso_from_date_parts(self, *_):
+        try:
+            self._date_from_parts()
+        except ValueError:
+            # Keep partial typing intact; publish will explain invalid dates.
+            pass
+
+    def _date_from_parts(self) -> str:
+        day, month, year = self.date_day.get().strip(), self.date_month.get().strip(), self.date_year.get().strip()
+        if not any((day, month, year)):
+            return ""
+        if not all((day, month, year)):
+            raise ValueError("Complete dia, mês e ano da data.")
+        if month not in MONTHS_PT:
+            raise ValueError("Escolha um mês válido.")
+        try:
+            value = datetime(int(year), MONTHS_PT.index(month) + 1, int(day)).date().isoformat()
+        except ValueError as error:
+            raise ValueError("Informe uma data válida.") from error
+        self.vars["date"].set(value)
+        return value
 
     def choose(self):
         name = filedialog.askopenfilename(filetypes=[("Fotos", "*.jpg *.jpeg *.png *.webp *.heic *.heif *.JPG *.JPEG *.PNG *.WEBP *.HEIC *.HEIF"), ("Todos", "*.*")])
@@ -194,6 +259,11 @@ class Publisher(tk.Tk):
             return
         values = {key: var.get().strip() for key, var in self.vars.items()}
         values["slug"] = slugify(values["slug"])
+        try:
+            values["date"] = self._date_from_parts()
+        except ValueError as error:
+            messagebox.showwarning("Data inválida", str(error))
+            return
         if not all(values[key] for key in ("title", "title_en", "slug", "date", "country", "country_en", "alt", "alt_en")):
             messagebox.showwarning("Campos obrigatórios", "Preencha os campos em PT-BR e inglês, além de slug, data e país.")
             return
