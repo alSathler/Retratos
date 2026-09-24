@@ -8,6 +8,8 @@ const panoramas = (await getCollection("panoramas")).sort(
     (a, b) => a.data.date.getTime() - b.data.date.getTime()
 );
 const total = panoramas.length;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const mapUrl = `${base}/map`;
 ---
 
 <Base showHeader={false}>
@@ -25,6 +27,7 @@ const total = panoramas.length;
         <footer class="colophon">
             <div class="shell colophon__row">
                 <span class="colophon__mark" data-language-value data-pt="diário do explorador." data-en="explorer's journal.">diário do explorador.</span>
+                <a class="colophon__atlas" href={mapUrl}>atlas <span aria-hidden="true">↗</span></a>
                 <span data-language-value data-pt="fotografias e notas pessoais" data-en="photographs and personal notes">fotografias e notas pessoais</span>
                 <span>© {new Date().getFullYear()}</span>
             </div>
