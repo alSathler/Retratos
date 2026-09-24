@@ -1,6 +1,7 @@
 ---
 import { Image, getImage } from "astro:assets";
 import { render, type CollectionEntry } from "astro:content";
+import { renderMarkdown } from "../lib/markdown";
 
 interface Props {
     panorama: CollectionEntry<"panoramas">;
@@ -14,6 +15,7 @@ const { Content } = await render(panorama);
 const ratio = data.image.width / data.image.height;
 const indexStr = String(index).padStart(2, "0");
 const totalStr = String(total).padStart(2, "0");
+const noteEnHtml = renderMarkdown(data.noteEn ?? "Translation not available yet.");
 
 const monthYearPt = data.date.toLocaleDateString("pt-BR", {
     month: "long",
@@ -92,7 +94,7 @@ const lqip = await getImage({
             <section class="log-entry__note" aria-label="Nota pessoal">
                 <p class="log-entry__note-label" data-language-value data-pt="nota" data-en="note">nota</p>
                 <div data-language-content="pt"><Content /></div>
-                <p data-language-content="en">{data.noteEn ?? "Translation not available yet."}</p>
+                <div data-language-content="en" set:html={noteEnHtml}></div>
             </section>
         </div>
 

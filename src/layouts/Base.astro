@@ -97,6 +97,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
                     const value = el.dataset[language === "en" ? "en" : "pt"];
                     if (value) el.textContent = value;
                 });
+                document.querySelectorAll<HTMLElement>("[data-language-html]").forEach((el) => {
+                    const value = el.dataset[language === "en" ? "enHtml" : "ptHtml"];
+                    if (value) el.innerHTML = value;
+                });
                 document.querySelectorAll<HTMLImageElement>("[data-language-alt]").forEach((image) => {
                     image.alt = image.dataset[language === "en" ? "en" : "pt"] || "";
                 });

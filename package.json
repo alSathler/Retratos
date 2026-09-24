@@ -12,12 +12,14 @@
         "check": "astro check",
         "import:panoramas": "node scripts/import-panoramas.mjs",
         "test:panoramas": "node --test scripts/heic-exif.test.mjs scripts/new-panoramas.test.mjs scripts/panorama-batches.test.mjs scripts/panos2-panoramas.test.mjs",
-        "migrate:posts": "node scripts/migrate-posts.mjs"
-        ,"generate:world-map": "node scripts/generate-geographic-world-map.mjs"
+        "migrate:posts": "node scripts/migrate-posts.mjs",
+        "generate:world-map": "node scripts/generate-geographic-world-map.mjs"
     },
     "dependencies": {
         "@astrojs/sitemap": "^3.2.1",
         "astro": "^5.1.0",
+        "micromark": "^4.0.2",
+        "micromark-extension-gfm": "^3.0.0",
         "photoswipe": "^5.4.4",
         "sharp": "^0.33.5"
     },

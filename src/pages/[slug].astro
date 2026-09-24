@@ -2,6 +2,7 @@
 import { Image, getImage } from "astro:assets";
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import Base from "../layouts/Base.astro";
+import { renderMarkdown } from "../lib/markdown";
 
 export async function getStaticPaths() {
     const panoramas = (await getCollection("panoramas")).sort(
@@ -51,6 +52,9 @@ const mapUrl = `${base}/map#${panorama.id}`;
 const fullImageUrl = data.full ? `${base}${data.full.src}` : null;
 const indexStr = String(index).padStart(2, "0");
 const totalStr = String(total).padStart(2, "0");
+const captionPtHtml = renderMarkdown(data.alt);
+const captionEnHtml = renderMarkdown(data.altEn ?? data.alt);
+const noteEnHtml = renderMarkdown(data.noteEn ?? "Translation not available yet.");
 
 const fullImage = await getImage({
     src: data.image,
@@ -103,7 +107,7 @@ const lqip = await getImage({
                     />
                     <span class="post__open" data-language-value data-pt="abrir foto ↗" data-en="open frame ↗">abrir foto ↗</span>
                 </a>
-                <p class="post__caption" data-language-value data-pt={data.alt} data-en={data.altEn ?? data.alt}>{data.alt}</p>
+                <div class="post__caption" data-language-html data-pt-html={captionPtHtml} data-en-html={captionEnHtml} set:html={captionPtHtml}></div>
             </div>
 
             <aside class="post__field-note">
@@ -112,7 +116,7 @@ const lqip = await getImage({
                 <section class="post__note" aria-label="Nota pessoal">
                     <p class="post__note-label" data-language-value data-pt="nota" data-en="note">nota</p>
                     <div data-language-content="pt"><Content /></div>
-                    <p data-language-content="en">{data.noteEn ?? "Translation not available yet."}</p>
+                    <div data-language-content="en" set:html={noteEnHtml}></div>
                 </section>
                 <dl>
                     <div><dt data-language-value data-pt="registrado" data-en="recorded">registrado</dt><dd data-language-value data-pt={monthYearPt} data-en={monthYearEn}>{monthYearPt}</dd></div>
