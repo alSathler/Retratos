@@ -628,6 +628,9 @@ const pad = (n: number) => String(n).padStart(2, "0");
         let viewY = CY;
         let zoom = 1;
         const MIN_ZOOM = 1;
+        // A selected place cannot be zoomed all the way back out by accident.
+        // The complete world remains available after resetting the selection.
+        const MIN_FOCUSED_ZOOM = 2;
         const MAX_ZOOM = 20;
         const pointers = new Map();
         let gesture = null;
@@ -682,7 +685,8 @@ const pad = (n: number) => String(n).padStart(2, "0");
         }
 
         function zoomAt(point, factor) {
-            const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
+            const minimum = active ? MIN_FOCUSED_ZOOM : MIN_ZOOM;
+            const nextZoom = Math.max(minimum, Math.min(MAX_ZOOM, zoom * factor));
             if (nextZoom === zoom) return;
             const sourceX = viewX + (point.x - CX) / zoom;
             const sourceY = viewY + (point.y - CY) / zoom;
